@@ -5,6 +5,10 @@
 #include <Crunch/Matrix4.hpp>
 #include <Crunch/GeometricFunc.hpp>
 
+#ifdef minor
+#undef minor
+#endif
+
 namespace crunch
 {
     /**

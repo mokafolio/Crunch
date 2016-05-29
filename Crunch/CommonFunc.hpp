@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
 #include <Crunch/Vector4.hpp>

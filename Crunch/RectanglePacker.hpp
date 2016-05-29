@@ -177,7 +177,7 @@ namespace crunch
     template<class T>
     typename RectanglePackerT<T>::Result RectanglePackerT<T>::packRectangles(RectangleArray & _rectangles, stick::UInt32 _startWidth, stick::UInt32 _startHeight)
     {
-        if (!_rectangles.stick::Size())
+        if (!_rectangles.count())
             return Result();
 
         stick::UInt32 w, h;
@@ -242,9 +242,9 @@ namespace crunch
         if (!m_bPowerOfTwo)
         {
             PositionType max(0);
-            for (stick::Size i = 0; i < m_currentResult.m_positions.stick::Size(); ++i)
+            for (stick::Size i = 0; i < m_currentResult.m_positions.count(); ++i)
             {
-                PositionType nm = m_currentResult.m_positions[i] + _rectangles[i].stick::Size();
+                PositionType nm = m_currentResult.m_positions[i] + _rectangles[i].count();
                 if (nm.x > max.x)
                     max.x = nm.x;
                 if (nm.y > max.y)
@@ -266,7 +266,7 @@ namespace crunch
         stick::Size bestRectIndex = 0;
         ValueType bestY = std::numeric_limits<ValueType>::max();
 
-        for (stick::Size i = 0; i < m_freeRects.stick::Size(); ++i)
+        for (stick::Size i = 0; i < m_freeRects.count(); ++i)
         {
             ValueType diffX = m_freeRects[i].width() - _rect.width();
             ValueType diffY = m_freeRects[i].height() - _rect.height();
@@ -293,11 +293,11 @@ namespace crunch
         {
             m_currentResult.m_positions.push_back(m_freeRects[bestRectIndex].min());
             RectangleType positionedRect(m_freeRects[bestRectIndex].min(),
-                                         m_freeRects[bestRectIndex].min() + _rect.stick::Size());
+                                         m_freeRects[bestRectIndex].min() + _rect.count());
 
             //check with which existing free rects the new positioned rect intersects
             RectangleArray newRects;
-            newRects.reserve(m_freeRects.stick::Size());
+            newRects.reserve(m_freeRects.count());
             typename RectangleArray::iterator it = m_freeRects.begin();
             for (; it != m_freeRects.end();)
             {
@@ -333,7 +333,7 @@ namespace crunch
 
             typename RectangleArray::iterator sit = newRects.begin();
             RectangleArray final;
-            final.reserve(newRects.stick::Size());
+            final.reserve(newRects.count());
             for (; sit != newRects.end(); ++sit)
             {
                 bool bIsContained = false;
