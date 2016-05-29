@@ -32,6 +32,7 @@ Crunch/Rectangle.hpp
 Crunch/RectanglePacker.hpp
 Crunch/StringConversion.hpp
 Crunch/TrigonometryFunc.hpp
+Crunch/Tween.hpp
 Crunch/UtilityFunc.hpp
 Crunch/Vector2.hpp
 Crunch/Vector3.hpp

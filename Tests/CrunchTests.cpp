@@ -21,6 +21,7 @@
 #include <Crunch/RectanglePacker.hpp>
 #include <Crunch/StringConversion.hpp>
 #include <Crunch/TrigonometryFunc.hpp>
+#include <Crunch/Tween.hpp>
 #include <Crunch/UtilityFunc.hpp>
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
@@ -59,6 +60,18 @@ const Suite spec[] =
         EXPECT(col4.b == 1.0f);
         EXPECT(col4.a == 1.0f);
     },
+    SUITE("Tween Tests")
+    {
+        TweenCubicEaseOutf tween(0, 1, 2.0);
+        Float32 result = tween.update(2.0);
+        EXPECT(result ==  1.0);
+        EXPECT(tween.isFinished());
+
+        TweenLinearEaseOutf tween2(0, 1, 2.0);
+        result = tween2.update(2.0);
+        EXPECT(result ==  1.0);
+        EXPECT(tween2.isFinished());
+    }
 };
 
 int main(int _argc, const char * _args[])
