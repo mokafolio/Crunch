@@ -3,6 +3,7 @@
 
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Line.hpp>
+#include <Stick/Result.hpp>
 
 namespace crunch
 {
@@ -20,15 +21,17 @@ namespace crunch
          */
         typedef Vector2<T> VectorType;
 
+        using Result = stick::Result<Circle>;
+
         /**
          * @brief Errors that can occur during circle construction.
          */
-        enum Error
-        {
-            NoError = 0,
-            ErrorIntersection,
-            ErrorColinear
-        };
+        // enum Error
+        // {
+        //     NoError = 0,
+        //     ErrorIntersection,
+        //     ErrorColinear
+        // };
 
         /**
          * @brief Default Constructor.
@@ -47,17 +50,8 @@ namespace crunch
          * @param _a The first position.
          * @param _b The second position.
          * @param _c The third position.
-         * @param _errorCode Holds the error, if an error occurs during construction.
          */
-        Circle(const VectorType & _a, const VectorType & _b, const VectorType & _c, Error & _errorCode);
-
-        /**
-         * @brief Constructs a circle from three points on its circumference.
-         * @param _a The first position.
-         * @param _b The second position.
-         * @param _c The third position.
-         */
-        Circle(const VectorType & _a, const VectorType & _b, const VectorType & _c);
+        static Result fromPoints(const VectorType & _a, const VectorType & _b, const VectorType & _c);
 
         /**
          * @brief Copy constructs a circle from another circle.
@@ -122,10 +116,8 @@ namespace crunch
     private:
 
         VectorType m_position;
-
         T m_radius;
     };
-
 
     template<class T>
     Circle<T>::Circle()
@@ -141,26 +133,10 @@ namespace crunch
 
     }
 
-    template<class T>
-    Circle<T>::Circle(const VectorType & _a, const VectorType & _b, const VectorType & _c)
-    {
-        Error err;
-        *this = Circle(_a, _b, _c, err);
-
-        /*if (err != NoError)
-        {
-            if (err == ErrorColinear)
-                throw std::invalid_argument("Circle: The three VectorTypes provided are colinear");
-            else if (err == ErrorIntersection)
-                throw std::invalid_argument("Circle: Could not intersect bisector lines");
-        }*/
-    }
 
     template<class T>
-    Circle<T>::Circle(const VectorType & _a, const VectorType & _b, const VectorType & _c, Error & _errorCode)
+    typename Circle<T>::Result Circle<T>::fromPoints(const VectorType & _a, const VectorType & _b, const VectorType & _c)
     {
-        _errorCode = NoError;
-
         //bisect the triangle to find circle position and radius
         VectorType lineOneStart = (_a + _b) * 0.5;
         VectorType lineOneEnd = (_b - _a);
@@ -178,18 +154,14 @@ namespace crunch
         stick::Int32 throughSide = line.side(_b);
         if (!result)
         {
-            m_position = VectorType(0);
-            m_radius = -1;
-
+            //TODO: Better error codes
             if (throughSide == 0)
-                _errorCode = ErrorColinear;
+                return stick::Error(stick::ec::InvalidOperation, "Colinear", STICK_FILE, STICK_LINE);
             else
-                _errorCode = ErrorIntersection;
-            return;
+                return stick::Error(stick::ec::InvalidOperation, "No Intersection", STICK_FILE, STICK_LINE);
         }
 
-        m_position = result.intersections()[0];
-        m_radius = distance(m_position, _a);
+        return Circle(result.intersections()[0], distance(result.intersections()[0], _a));
     }
 
     template<class T>
