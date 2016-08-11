@@ -215,6 +215,8 @@ namespace crunch
         void validate();
     };
 
+    using Rectf = Rectangle<stick::Float32>;
+
     //free functions
     template<class T>
     Rectangle<T> merge(const Rectangle<T> & _a, const Rectangle<T> & _b);

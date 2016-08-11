@@ -71,6 +71,31 @@ const Suite spec[] =
         result = tween2.update(2.0);
         EXPECT(result ==  1.0);
         EXPECT(tween2.isFinished());
+    },
+    SUITE("RectanglePacker Tests")
+    {
+        // RectanglePacker packer;
+        // packer.setMaxSize(0, 0);
+        // packer.reset(5, 5);
+        // printf("A\n");
+        // EXPECT(!packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
+        // packer.setMaxSize(20, 20);
+        // packer.reset(10, 10);
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
+        // EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 5)));
+        // EXPECT(!packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
+        // printf("B\n");
+
+        RectanglePacker packer2;
+        packer2.reset(1000, 1000);
+
+        Randomizer rand;
+        for(int i=0; i<10; ++i)
+            EXPECT(packer2.placeRectangle(Rectangle<Float32>(0, 0, rand.randomf(2, 10), rand.randomf(2, 10))));
     }
 };
 

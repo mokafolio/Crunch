@@ -6,6 +6,7 @@
 #include <Crunch/Rectangle.hpp>
 #include <Crunch/UtilityFunc.hpp>
 #include <Stick/DynamicArray.hpp>
+#include <Stick/Result.hpp>
 
 namespace crunch
 {
@@ -41,81 +42,8 @@ namespace crunch
          */
         typedef stick::DynamicArray<RectangleType> RectangleArray;
 
-        /**
-         * @brief The position array type.
-         */
-        typedef stick::DynamicArray<PositionType> PositionArray;
+        using PlacementResult = stick::Result<RectangleType>;
 
-        /**
-         * @brief A class describing the packing operation result.
-         */
-        class Result
-        {
-            friend class RectanglePackerT;
-
-        public:
-
-            /**
-             * @brief Default Constructor.
-             */
-            Result(stick::Allocator & _alloc) :
-                m_positions(_alloc),
-                m_bSuccess(false)
-            {
-
-            }
-
-            /**
-             * @brief Constructs a result with a widht and height.
-             */
-            Result(stick::Allocator & _alloc, stick::UInt32 _w, stick::UInt32 _h) :
-                m_positions(_alloc),
-                m_width(_w),
-                m_height(_h),
-                m_bSuccess(false)
-            {
-
-            }
-
-            /**
-             * @brief Returns the width of the rectangular area used.
-             */
-            stick::UInt32 width() const
-            {
-                return m_width;
-            }
-
-            /**
-             * @brief Returns the height of the rectangular area used.
-             */
-            stick::UInt32 height() const
-            {
-                return m_height;
-            }
-
-            /**
-             * @brief Returns true if the packing was succesful.
-             */
-            bool sucess() const
-            {
-                return m_bSuccess;
-            }
-
-            /**
-             * @brief Returns the positions of the packed rectangles.
-             */
-            const PositionArray & positions() const
-            {
-                return m_positions;
-            }
-
-        private:
-
-            PositionArray m_positions;
-            stick::UInt32 m_width;
-            stick::UInt32 m_height;
-            bool m_bSuccess;
-        };
 
         /**
          * @brief Constructs the packer.
@@ -128,42 +56,47 @@ namespace crunch
         void setUsePowerOfTwo(bool _b);
 
         /**
-         * @brief Performs the packing.
-         * @param _rectangles The rectangles to pack.
-         * @param _startWidth The initial with of the packing area.
-         * @param _startHeight The initial height of the packing area.
-         * @return The Result of the packing operation.
+         * @brief Sets if the result should use power of two dimensions.
          */
-        Result packRectangles(RectangleArray & _rectangles, stick::UInt32 _startWidth, stick::UInt32 _startHeight);
+        void setMaxSize(stick::UInt32 _width, stick::UInt32 _height);
 
+        PlacementResult placeRectangle(const RectangleType & _rect);
+
+        void reset(stick::UInt32 _startWidth, stick::UInt32 _startHeight);
+
+        stick::Float32 maxWidth() const;
+
+        stick::Float32 maxHeight() const;
 
     private:
 
-        bool placeRectangle(const RectangleType & _rect);
-
-        void updateFreeRectangles(const RectangleType & _newlyPlacedRect);
-
+        PlacementResult placeRectangleHelper(const RectangleType & _rect);
 
         RectangleArray m_freeRects;
-
         bool m_bPowerOfTwo;
-
-        Result m_currentResult;
+        stick::UInt32 m_maxWidth;
+        stick::UInt32 m_maxHeight;
+        stick::UInt32 m_currentWidth;
+        stick::UInt32 m_currentHeight;
     };
 
-    namespace detail
+    /*namespace detail
     {
         template<class T>
         inline bool sortRectsByHeight(const Rectangle<T> & _a, const Rectangle<T> & _b)
         {
             return _a.height() > _b.height();
         }
-    }
+    }*/
 
     template<class T>
     RectanglePackerT<T>::RectanglePackerT(stick::Allocator & _alloc) :
         m_freeRects(_alloc),
-        m_bPowerOfTwo(true)
+        m_bPowerOfTwo(false),
+        m_maxWidth(1024),
+        m_maxHeight(1024),
+        m_currentWidth(128),
+        m_currentHeight(128)
     {
 
     }
@@ -175,92 +108,35 @@ namespace crunch
     }
 
     template<class T>
-    typename RectanglePackerT<T>::Result RectanglePackerT<T>::packRectangles(RectangleArray & _rectangles, stick::UInt32 _startWidth, stick::UInt32 _startHeight)
+    void RectanglePackerT<T>::setMaxSize(stick::UInt32 _width, stick::UInt32 _height)
     {
-        if (!_rectangles.count())
-            return Result();
-
-        stick::UInt32 w, h;
-
-        if (m_bPowerOfTwo)
-        {
-            w = upperPowerOfTwo32(_startWidth);
-            h = upperPowerOfTwo32(_startHeight);
-        }
-        else
-        {
-            w = _startWidth;
-            h = _startHeight;
-        }
-
-        m_currentResult = Result(m_freeRects.allocator(), w, h);
-        m_freeRects.clear();
-        m_freeRects.push_back(RectangleType(0, 0, w, h));
-
-        //sort them by height, bigger height first
-        std::sort(_rectangles.begin(), _rectangles.end(), detail::sortRectsByHeight<ValueType>);
-
-        typename RectangleArray::const_iterator it = _rectangles.begin();
-        for (; it != _rectangles.end(); ++it)
-        {
-            bool success = false;
-
-            while (!success)
-            {
-                //try to place it
-                success = placeRectangle(*it);
-                if (!success)
-                {
-                    //if we can't fit it, we restick::Size the available space and adjust the freeRects accordingly
-                    if (m_currentResult.m_width < m_currentResult.m_height)
-                    {
-                        ValueType twice = m_currentResult.m_width * 2;
-                        typename RectangleArray::iterator sit = m_freeRects.begin();
-                        for (; sit != m_freeRects.end(); ++sit)
-                        {
-                            if ((*sit).max().x == m_currentResult.m_width)
-                                (*sit).max().x = twice;
-                        }
-                        m_currentResult.m_width *= 2;
-                    }
-                    else
-                    {
-                        ValueType twice = m_currentResult.m_height * 2;
-                        typename RectangleArray::iterator sit = m_freeRects.begin();
-                        for (; sit != m_freeRects.end(); ++sit)
-                        {
-                            if ((*sit).max().y == m_currentResult.m_height)
-                                (*sit).max().y = twice;
-                        }
-                        m_currentResult.m_height *= 2;
-                    }
-                }
-            }
-        }
-
-        //compute the actual used stick::Size
-        if (!m_bPowerOfTwo)
-        {
-            PositionType max(0);
-            for (stick::Size i = 0; i < m_currentResult.m_positions.count(); ++i)
-            {
-                PositionType nm = m_currentResult.m_positions[i] + _rectangles[i].count();
-                if (nm.x > max.x)
-                    max.x = nm.x;
-                if (nm.y > max.y)
-                    max.y = nm.y;
-            }
-
-            m_currentResult.m_width = max.x;
-            m_currentResult.m_height = max.y;
-        }
-        m_currentResult.m_bSuccess = true;
-
-        return m_currentResult;
+        m_maxWidth = _width;
+        m_maxHeight = _height;
     }
 
     template<class T>
-    bool RectanglePackerT<T>::placeRectangle(const RectangleType & _rect)
+    void RectanglePackerT<T>::reset(stick::UInt32 _startWidth, stick::UInt32 _startHeight)
+    {
+        m_freeRects.clear();
+
+        if (m_bPowerOfTwo)
+        {
+            m_currentWidth = upperPowerOfTwo32(_startWidth);
+            m_currentHeight = upperPowerOfTwo32(_startHeight);
+        }
+        else
+        {
+            m_currentWidth = _startWidth;
+            m_currentHeight = _startHeight;
+        }
+
+        m_currentWidth = std::min(m_maxWidth, m_currentWidth);
+        m_currentHeight = std::min(m_maxHeight, m_currentHeight);
+        m_freeRects.append(RectangleType(0, 0, m_currentWidth, m_currentHeight));
+    }
+
+    template<class T>
+    typename RectanglePackerT<T>::PlacementResult RectanglePackerT<T>::placeRectangleHelper(const RectangleType & _rect)
     {
         bool bFoundFittingRect = false;
         stick::Size bestRectIndex = 0;
@@ -268,9 +144,12 @@ namespace crunch
 
         for (stick::Size i = 0; i < m_freeRects.count(); ++i)
         {
+
+            //printf("TRYING TO FIT %f, %f, %f, %f\n", m_freeRects[i].min().x, m_freeRects[i].min().y, m_freeRects[i].max().x, m_freeRects[i].max().y);
             ValueType diffX = m_freeRects[i].width() - _rect.width();
             ValueType diffY = m_freeRects[i].height() - _rect.height();
-            if (diffX > 0 && diffY > 0)
+
+            if (diffX >= 0 && diffY >= 0)
             {
                 if (m_freeRects[i].min().y < bestY)
                 {
@@ -281,24 +160,23 @@ namespace crunch
                         break;
                 }
             }
-            else if (diffX == 0 && diffY == 0)
+            /*else if (diffX == 0 && diffY == 0)
             {
                 bFoundFittingRect = true;
                 bestRectIndex = i;
                 break;
-            }
+            }*/
         }
 
         if (bFoundFittingRect)
         {
-            m_currentResult.m_positions.push_back(m_freeRects[bestRectIndex].min());
             RectangleType positionedRect(m_freeRects[bestRectIndex].min(),
-                                         m_freeRects[bestRectIndex].min() + _rect.count());
+                                         m_freeRects[bestRectIndex].min() + _rect.size());
 
             //check with which existing free rects the new positioned rect intersects
             RectangleArray newRects;
             newRects.reserve(m_freeRects.count());
-            typename RectangleArray::iterator it = m_freeRects.begin();
+            auto it = m_freeRects.begin();
             for (; it != m_freeRects.end();)
             {
                 //check if the intersect
@@ -306,24 +184,24 @@ namespace crunch
                 {
                     if ((*it).min().x < positionedRect.min().x)
                     {
-                        newRects.push_back(RectangleType((*it).min(), PositionType(positionedRect.min().x, (*it).max().y)));
+                        newRects.append(RectangleType((*it).min(), PositionType(positionedRect.min().x, (*it).max().y)));
                     }
 
                     if ((*it).max().x > positionedRect.max().x)
                     {
-                        newRects.push_back(RectangleType(PositionType(positionedRect.max().x, (*it).min().y), (*it).max()));
+                        newRects.append(RectangleType(PositionType(positionedRect.max().x, (*it).min().y), (*it).max()));
                     }
 
                     if ((*it).min().y < positionedRect.min().y)
                     {
-                        newRects.push_back(RectangleType((*it).min(), PositionType((*it).max().x, positionedRect.min().y)));
+                        newRects.append(RectangleType((*it).min(), PositionType((*it).max().x, positionedRect.min().y)));
                     }
 
                     if ((*it).max().y > positionedRect.max().y)
                     {
-                        newRects.push_back(RectangleType(PositionType((*it).min().x, positionedRect.max().y), (*it).max()));
+                        newRects.append(RectangleType(PositionType((*it).min().x, positionedRect.max().y), (*it).max()));
                     }
-                    it = m_freeRects.erase(it);
+                    it = m_freeRects.remove(it);
                 }
                 else
                 {
@@ -331,33 +209,113 @@ namespace crunch
                 }
             }
 
-            typename RectangleArray::iterator sit = newRects.begin();
-            RectangleArray final;
-            final.reserve(newRects.count());
-            for (; sit != newRects.end(); ++sit)
             {
-                bool bIsContained = false;
-                typename RectangleArray::iterator tit = newRects.begin();
-                for (; tit != newRects.end(); ++tit)
+                auto sit = newRects.begin();
+                RectangleArray final;
+                final.reserve(newRects.count());
+                for (; sit != newRects.end(); ++sit)
                 {
-                    if (tit != sit)
+                    bool bIsContained = false;
+                    auto tit = newRects.begin();
+                    for (; tit != newRects.end(); ++tit)
                     {
-                        if ((*tit).contains(*sit))
+                        if (tit != sit)
                         {
-                            bIsContained = true;
-                            break;
+                            if ((*tit).contains(*sit))
+                            {
+                                bIsContained = true;
+                                break;
+                            }
                         }
                     }
+                    if (!bIsContained)
+                        final.append(*sit);
                 }
-                if (!bIsContained)
-                    final.push_back(*sit);
+
+                m_freeRects.insert(m_freeRects.end(), final.begin(), final.end());
             }
 
-            m_freeRects.insert(m_freeRects.end(), final.begin(), final.end());
-
-            return true;
+            return positionedRect;
         }
-        return false;
+
+        return stick::Error(stick::ec::InvalidOperation, "Could not place rectangle inside current dimensions", STICK_FILE, STICK_LINE);
+    }
+
+    template<class T>
+    typename RectanglePackerT<T>::PlacementResult RectanglePackerT<T>::placeRectangle(const RectangleType & _rect)
+    {
+        PlacementResult result;
+        do
+        {
+            //try to place it
+            result = placeRectangleHelper(_rect);
+            if (!result)
+            {
+                if (m_currentWidth < m_maxHeight || m_currentHeight < m_maxHeight)
+                {
+                    //if we can't fit it, we resize the available space and adjust the freeRects accordingly
+                    if (m_currentWidth < m_currentHeight)
+                    {
+                        ValueType twice = std::min(m_currentWidth * 2, m_maxWidth);
+                        if (m_freeRects.count())
+                        {
+                            auto sit = m_freeRects.begin();
+                            for (; sit != m_freeRects.end(); ++sit)
+                            {
+                                if ((*sit).max().x == m_currentWidth)
+                                {
+                                    (*sit).max().x = twice;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            m_freeRects.append(RectangleType(m_currentWidth, 0, twice, m_currentHeight));
+                        }
+                        m_currentWidth = twice;
+                    }
+                    else
+                    {
+                        ValueType twice = std::min(m_currentHeight * 2, m_maxHeight);
+                        if (m_freeRects.count())
+                        {
+                            auto sit = m_freeRects.begin();
+                            for (; sit != m_freeRects.end(); ++sit)
+                            {
+                                if ((*sit).max().y == m_currentHeight)
+                                {
+                                    (*sit).max().y = twice;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            m_freeRects.append(RectangleType(0, m_currentHeight, m_currentWidth, twice));
+                        }
+                        m_currentHeight = twice;
+                    }
+                }
+                else
+                {
+                    return stick::Error(stick::ec::InvalidOperation, "Could not place rectangle and the maximum size is reached", STICK_FILE, STICK_LINE);
+                }
+            }
+        }
+        while (!result);
+
+        return result;
+    }
+
+    template<class T>
+    stick::Float32 RectanglePackerT<T>::maxWidth() const
+    {
+        return m_maxWidth;
+    }
+
+    template<class T>
+    stick::Float32 RectanglePackerT<T>::maxHeight() const
+    {
+        return m_maxHeight;
     }
 
     typedef RectanglePackerT<stick::Float32> RectanglePacker;
