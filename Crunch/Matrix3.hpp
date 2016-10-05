@@ -89,7 +89,7 @@ namespace crunch
         /**
          * @brief Assign another matrix to this.
          */
-        inline Matrix3<T> & operator = (const Matrix3<T> & _other);
+        inline Matrix3 & operator = (const Matrix3<T> & _other);
 
         /**
          * @brief Access a column vector of the matrix.
@@ -134,37 +134,37 @@ namespace crunch
         /**
          * @brief Adds two matrices.
          */
-        inline Matrix3<T> operator + (const Matrix3<T> & _mat) const;
+        inline Matrix3 operator + (const Matrix3<T> & _mat) const;
 
         /**
          * @brief Subtracts two matrices.
          */
-        inline Matrix3<T> operator - (const Matrix3<T> & _mat) const;
+        inline Matrix3 operator - (const Matrix3<T> & _mat) const;
 
         /**
          * @brief Adds another matrix to this matrix.
          */
-        inline Matrix3<T> & operator += (const Matrix3<T> & _mat);
+        inline Matrix3 & operator += (const Matrix3<T> & _mat);
 
         /**
          * @brief Subtracts another matrix from this matrix.
          */
-        inline Matrix3<T> & operator -= (const Matrix3<T> & _mat);
+        inline Matrix3 & operator -= (const Matrix3<T> & _mat);
 
         /**
          * @brief Negates this matrix.
          */
-        inline Matrix3<T> operator - () const;
+        inline Matrix3 operator - () const;
 
         /**
          * @brief Multiplies two matrices.
          */
-        inline Matrix3<T> operator * (const Matrix3<T> & _mat) const;
+        inline Matrix3 operator * (const Matrix3<T> & _mat) const;
 
         /**
          * @brief Multiplies all elements in a matrix with the provided number.
          */
-        inline Matrix3<T> operator * (T _v) const;
+        inline Matrix3 operator * (T _v) const;
 
         /**
          * @brief Multiplies a matrix with a column 2D vector.
@@ -181,12 +181,12 @@ namespace crunch
         /**
          * @brief Multiplies this matrix with another matrix.
          */
-        inline Matrix3<T> & operator *= (const Matrix3<T> & _mat);
+        inline Matrix3 & operator *= (const Matrix3<T> & _mat);
 
         /**
          * @brief Multiplies all elements in this matrix with the provided number.
          */
-        inline Matrix3<T> & operator *= (T _v);
+        inline Matrix3 & operator *= (T _v);
 
         /**
          * @brief Translate this matrix in 2D.
@@ -194,7 +194,7 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void translate2D(T _x, T _y);
+        inline Matrix3 & translate2D(T _x, T _y);
 
         /**
          * @brief Translate this matrix in 2D.
@@ -202,7 +202,7 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void translate2D(const Vector2<T> & _vec);
+        inline Matrix3 & translate2D(const Vector2<T> & _vec);
 
         /**
          * @brief Scales this matrix in 2D.
@@ -210,7 +210,7 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void scale2D(T _s);
+        inline Matrix3 & scale2D(T _s);
 
         /**
          * @brief Scales this matrix in 2D.
@@ -218,7 +218,7 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void scale2D(T _x, T _y);
+        inline Matrix3 & scale2D(T _x, T _y);
 
         /**
          * @brief Scales this matrix in 2D.
@@ -226,7 +226,7 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void scale2D(const Vector2<T> & _scale);
+        inline Matrix3 & scale2D(const Vector2<T> & _scale);
 
         /**
          * @brief Rotate this matrix in 2D by an angle in radians.
@@ -234,13 +234,21 @@ namespace crunch
          * Note: This operation only yiels meaningful results if this is a 2D matrix
          * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
          */
-        inline void rotate2D(T _radians);
+        inline Matrix3 & rotate2D(T _radians);
+
+        /**
+         * @brief Skew this matrix in 2D.
+         *
+         * Note: This operation only yiels meaningful results if this is a 2D matrix
+         * (i.e. the upper left 2x2 is the 2D transformation and the third column translation)
+         */
+        inline Matrix3 & skew2D(T _radiansX, T _radiansY);
 
         /**
          * @brief Scale this matrix in 3D.
          * @param _s Uniform scaling factor.
          */
-        inline void scale(T _s);
+        inline Matrix3 & scale(T _s);
 
         /**
          * @brief Scale this matrix in 3D.
@@ -248,24 +256,24 @@ namespace crunch
          * @param _y The scaling factor along the y axis.
          * @param _z The scaling factor along the z axis.
          */
-        inline void scale(T _x, T _y, T _z);
+        inline Matrix3 & scale(T _x, T _y, T _z);
 
         /**
          * @brief Scale this matrix in 3D.
          * @param _vec The scaling factors along the three axis.
          */
-        inline void scale(const Vector3<T> & _vec);
+        inline Matrix3 & scale(const Vector3<T> & _vec);
 
         /**
          * @brief Rotate this matrix by an angle in radians around the provided axis.
          */
-        inline void rotate(T _radians, const Vector3<T> & _axis);
+        inline Matrix3 & rotate(T _radians, const Vector3<T> & _axis);
 
         /**
          * @brief Rotate this matrix by the orientation of a quaternion.
          * @param _quat The quaternion expressing the orientation.
          */
-        inline void rotate(const Quaternion<T> & _quat);
+        inline Matrix3 & rotate(const Quaternion<T> & _quat);
 
         /**
          * @brief Rotate this matrix by the provided euler angles in radians.
@@ -273,13 +281,13 @@ namespace crunch
          * @param _pitch Angle in radians.
          * @param _roll Angle in radians.
          */
-        inline void rotate(T _yaw, T _pitch, T _roll);
+        inline Matrix3 & rotate(T _yaw, T _pitch, T _roll);
 
         /**
          * @brief Rotate this matrix by the provided euler angles in radians.
          * @param _euler Vector holding the euler angles in radians.
          */
-        inline void rotate(const Vector3<T> & _euler);
+        inline Matrix3 & rotate(const Vector3<T> & _euler);
 
         /**
          * @brief Returns a pointer to the memory block of this matrix.
@@ -294,29 +302,29 @@ namespace crunch
         /**
          * @brief Returns an identity matrix.
          */
-        static inline Matrix3<T> identity();
+        static inline Matrix3 identity();
 
         /**
          * @brief Returns a matrix with all elements initialized to zero.
          */
-        static inline Matrix3<T> zero();
+        static inline Matrix3 zero();
 
         /**
          * @brief Returns a 2D translation matrix.
          */
-        inline static Matrix3<T> translation2D(const Vector2<T> & _vec);
+        inline static Matrix3 translation2D(const Vector2<T> & _vec);
 
         /**
          * @brief Returns a 2D translation matrix.
          */
-        inline static Matrix3<T> translation2D(T _x, T _y);
+        inline static Matrix3 translation2D(T _x, T _y);
 
         /**
          * @brief Returns a 3D rotation matrix.
          * @param _radians Angle in radians.
          * @param _axis Rotation axis.
          */
-        static inline Matrix3<T> rotation(T _radians, const Vector3<T> & _axis = Vector3<T>(0, 0, 1));
+        static inline Matrix3 rotation(T _radians, const Vector3<T> & _axis = Vector3<T>(0, 0, 1));
 
         /**
          * @brief Returns a 3D rotation matrix from euler angles.
@@ -324,31 +332,42 @@ namespace crunch
          * @param _pitch Angle in radians.
          * @param _roll Angle in radians.
          */
-        static inline Matrix3<T> rotation(T _yaw, T _pitch, T _roll);
+        static inline Matrix3 rotation(T _yaw, T _pitch, T _roll);
 
         /**
          * @brief Returns a 3D rotation matrix from euler angles.
          * @param _euler Vector holding the euler angles in radians.
          */
-        static inline Matrix3<T> rotation(const Vector3<T> & _angles);
+        static inline Matrix3 rotation(const Vector3<T> & _angles);
 
         /**
          * @brief Returns a 3D rotation matrix from a quaternion.
          * @param _quat The quaternion expressing the orientation.
          */
-        static inline Matrix3<T> rotation(const Quaternion<T> & _quat);
+        static inline Matrix3 rotation(const Quaternion<T> & _quat);
+
+        /**
+         * @brief Returns a 2D rotation matrix.
+         * @param _angle The angle in radians.
+         */
+        static inline Matrix3 rotation2D(T _angle);
+
+        /**
+         * @brief Returns a 2D skew matrix.
+         */
+        static inline Matrix3 skewMatrix2D(T _radiansX, T _radiansY);
 
         /**
          * @brief Returns a uniform scaling matrix.
          * @param _scale The scaling factor.
          */
-        static inline Matrix3<T> scaling(T _scale);
+        static inline Matrix3 scaling(T _scale);
 
         /**
          * @brief Returns a scaling matrix.
          * @param _scale The scaling factor along the three axis.
          */
-        static inline Matrix3<T> scaling(const Vector3<T> & _scale);
+        static inline Matrix3 scaling(const Vector3<T> & _scale);
 
         /**
          * @brief Returns a scaling matrix.
@@ -356,7 +375,7 @@ namespace crunch
          * @param _y The scaling factor along the y axis.
          * @param _z The scaling factor along the z axis.
          */
-        static inline Matrix3<T> scaling(T _x, T _y, T _z);
+        static inline Matrix3 scaling(T _x, T _y, T _z);
 
 
     private:
@@ -617,83 +636,97 @@ namespace crunch
     //____________________________________
 
     template<class T>
-    inline void Matrix3<T>::translate2D(T _x, T _y)
+    inline Matrix3<T> & Matrix3<T>::translate2D(T _x, T _y)
     {
-        translate2D(Vector2<T>(_x, _y));
+        return translate2D(Vector2<T>(_x, _y));
     }
 
     template<class T>
-    inline void Matrix3<T>::translate2D(const Vector2<T> & _vec)
+    inline Matrix3<T> & Matrix3<T>::translate2D(const Vector2<T> & _vec)
     {
         m_col2 = m_col0 * _vec.x + m_col1 * _vec.y + m_col2;
-        //*this = Matrix3::translation2D(_vec) * *this;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::scale2D(T _s)
+    inline Matrix3<T> & Matrix3<T>::scale2D(T _s)
     {
-        scale(Vector3<T>(_s, _s, 1.0));
+        return scale(Vector3<T>(_s, _s, 1.0));
     }
 
     template<class T>
-    inline void Matrix3<T>::scale2D(T _x, T _y)
+    inline Matrix3<T> & Matrix3<T>::scale2D(T _x, T _y)
     {
-        scale(Vector3<T>(_x, _y, 1.0));
+        return scale(Vector3<T>(_x, _y, 1.0));
     }
 
     template<class T>
-    inline void Matrix3<T>::scale2D(const Vector2<T> & _scale)
+    inline Matrix3<T> & Matrix3<T>::scale2D(const Vector2<T> & _scale)
     {
-        scale(Vector3<T>(_scale.x, _scale.y, 1.0));
+        return scale(Vector3<T>(_scale.x, _scale.y, 1.0));
     }
 
     template<class T>
-    inline void Matrix3<T>::rotate2D(T _radians)
+    inline Matrix3<T> & Matrix3<T>::rotate2D(T _radians)
     {
-        //TODO: make an optimized 2D version as that should need less multiplications
-        rotate(_radians, Vector3<T>(0, 0, 1));
+        *this *= rotation2D(_radians);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::scale(T _s)
+    inline Matrix3<T> & Matrix3<T>::skew2D(T _radiansX, T _radiansY)
+    {
+        *this *= skewMatrix2D(_radiansX, _radiansY);
+        return *this;
+    }
+
+    template<class T>
+    inline Matrix3<T> & Matrix3<T>::scale(T _s)
     {
         *this *= scaling(_s);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::scale(T _x, T _y, T _z)
+    inline Matrix3<T> & Matrix3<T>::scale(T _x, T _y, T _z)
     {
         *this *= scaling(Vector3<T>(_x, _y, _z));
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::scale(const Vector3<T> & _vec)
+    inline Matrix3<T> & Matrix3<T>::scale(const Vector3<T> & _vec)
     {
         *this *= scaling(_vec);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::rotate(T _radians, const Vector3<T> & _axis)
+    inline Matrix3<T> & Matrix3<T>::rotate(T _radians, const Vector3<T> & _axis)
     {
         *this *= rotation(_radians, _axis);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::rotate(const Quaternion<T> & _quat)
+    inline Matrix3<T> & Matrix3<T>::rotate(const Quaternion<T> & _quat)
     {
         *this *= rotation(_quat);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::rotate(T _yaw, T _pitch, T _roll)
+    inline Matrix3<T> & Matrix3<T>::rotate(T _yaw, T _pitch, T _roll)
     {
         *this *= rotation(_yaw, _pitch, _roll);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix3<T>::rotate(const Vector3<T> & _euler)
+    inline Matrix3<T> & Matrix3<T>::rotate(const Vector3<T> & _euler)
     {
         *this *= rotation(_euler);
+        return *this;
     }
 
 
@@ -768,14 +801,6 @@ namespace crunch
         T yzC = _axis.y * zC;
         T zxC = _axis.z * xC;
 
-        /*STICK_ASSERT(!std::isnan(c));
-        STICK_ASSERT(!std::isnan(s));
-        STICK_ASSERT(!std::isnan(C));
-
-        STICK_ASSERT(!std::isnan(_axis.x));
-        STICK_ASSERT(!std::isnan(_axis.y));
-        STICK_ASSERT(!std::isnan(_axis.z));*/
-
         return Matrix3<T>(
                    Vector3<T>(_axis.x * xC + c, xyC + zs, zxC - ys),
                    Vector3<T>(xyC - zs, _axis.y * yC + c, yzC + xs),
@@ -833,13 +858,29 @@ namespace crunch
     }
 
     template<class T>
+    inline Matrix3<T> Matrix3<T>::rotation2D(T _angle)
+    {
+        T c = std::cos(_angle);
+        T s = std::sin(_angle);
+        return Matrix3<T>(Vector3<T>(c, s, 0),
+                          Vector3<T>(-s, c, 0),
+                          Vector3<T>(0, 0, 1));
+    }
+
+    template<class T>
+    inline Matrix3<T> Matrix3<T>::skewMatrix2D(T _radiansX, T _radiansY)
+    {
+        return Matrix3<T>(Vector3<T>(1, std::tan(_radiansY), 0),
+                          Vector3<T>(std::tan(_radiansX), 1, 0),
+                          Vector3<T>(0, 0, 1));
+    }
+
+    template<class T>
     inline Matrix3<T> Matrix3<T>::scaling(const Vector3<T> & _scale)
     {
-        return Matrix3<T>(
-                   Vector3<T>(_scale.x, T(0.0), T(0.0)),
-                   Vector3<T>(T(0.0), _scale.y, T(0.0)),
-                   Vector3<T>(T(0.0), T(0.0), _scale.z)
-               );
+        return Matrix3<T>(Vector3<T>(_scale.x, T(0.0), T(0.0)),
+                          Vector3<T>(T(0.0), _scale.y, T(0.0)),
+                          Vector3<T>(T(0.0), T(0.0), _scale.z));
     }
 
     template<class T>

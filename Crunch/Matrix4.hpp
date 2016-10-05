@@ -5,8 +5,7 @@
 #include <Crunch/Vector3.hpp>
 #include <Crunch/Vector4.hpp>
 #include <Crunch/TrigonometryFunc.hpp>
-
-#include <array>
+#include <Stick/DynamicArray.hpp>
 
 namespace crunch
 {
@@ -903,24 +902,21 @@ namespace crunch
         return ret;
     }
 
-    namespace detail
+    template<class T>
+    stick::DynamicArray<T> frustumPlanesFromPerspective(T _fovy, T _aspect, T _near, T _far)
     {
-        template<class T>
-        std::array<T, 6> frustumPlanesFromPerspective(T _fovy, T _aspect, T _near, T _far)
-        {
-            T tanFovy = tan(toRadians(_fovy * (T)0.5));
-            T height    =  tanFovy * _near;
-            T width  =  height * _aspect;
+        T tanFovy = tan(toRadians(_fovy * (T)0.5));
+        T height = tanFovy * _near;
+        T width = height * _aspect;
 
-            return { -width, width, -height, height, _near, _far};
-        }
+        return { -width, width, -height, height, _near, _far};
     }
 
     template<class T>
     inline Matrix4<T> Matrix4<T>::perspective(T _fovy, T _aspect, T _near, T _far)
     {
         Matrix4<T> ret;
-        std::array<T, 6> fr = detail::frustumPlanesFromPerspective(_fovy, _aspect, _near, _far);
+        auto fr = frustumPlanesFromPerspective(_fovy, _aspect, _near, _far);
         ret = frustum(fr[0], fr[1], fr[2], fr[3], fr[4], fr[5]);
 
         return ret;

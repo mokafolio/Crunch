@@ -31,6 +31,7 @@ Crunch/Randomizer.hpp
 Crunch/Rectangle.hpp
 Crunch/RectanglePacker.hpp
 Crunch/StringConversion.hpp
+Crunch/TiledFrustum.hpp
 Crunch/TrigonometryFunc.hpp
 Crunch/Tween.hpp
 Crunch/UtilityFunc.hpp

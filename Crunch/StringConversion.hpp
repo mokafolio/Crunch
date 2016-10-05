@@ -3,6 +3,7 @@
 
 #include <Stick/String.hpp>
 #include <Stick/StringConversion.hpp>
+#include <cstdio> //for sprintf
 
 namespace crunch
 {
@@ -77,6 +78,15 @@ namespace crunch
                 stick::toString(_col.b, _alloc), ", ",
                 stick::toString(_col.a, _alloc), ")");
     }
+
+    // template<class T>
+    // stick::String toString(const Matrix4<T> & _mat, stick::Allocator & _alloc = stick::defaultAllocator())
+    // {
+    //     stick::String ret;
+    //     ret.reserve(512);
+    //     int res = std::sprintf(ret.ptr(), "Matrix4(%d, %d, %d, %d, \n, %d, %d, %d, %d, \n, %d, %d, %d, %d, \n, %d, %d, %d, %d)", 
+    //                 )
+    // }
 }
 
 #endif //CRUNCH_STRINGCONVERSION_HPP

@@ -20,6 +20,7 @@
 #include <Crunch/Rectangle.hpp>
 #include <Crunch/RectanglePacker.hpp>
 #include <Crunch/StringConversion.hpp>
+#include <Crunch/TiledFrustum.hpp>
 #include <Crunch/TrigonometryFunc.hpp>
 #include <Crunch/Tween.hpp>
 #include <Crunch/UtilityFunc.hpp>

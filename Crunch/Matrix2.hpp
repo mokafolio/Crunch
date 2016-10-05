@@ -69,7 +69,7 @@ namespace crunch
         /**
          * @brief Assign another matrix to this.
          */
-        inline Matrix2<T> & operator = (const Matrix2<T> & _other);
+        inline Matrix2 & operator = (const Matrix2<T> & _other);
 
         /**
          * @brief Access a column vector of the matrix.
@@ -114,37 +114,37 @@ namespace crunch
         /**
          * @brief Adds two matrices.
          */
-        inline Matrix2<T> operator + (const Matrix2<T> & _mat) const;
+        inline Matrix2 operator + (const Matrix2<T> & _mat) const;
 
         /**
          * @brief Subtracts two matrices.
          */
-        inline Matrix2<T> operator - (const Matrix2<T> & _mat) const;
+        inline Matrix2 operator - (const Matrix2<T> & _mat) const;
 
         /**
          * @brief Adds another matrix to this matrix.
          */
-        inline Matrix2<T> & operator += (const Matrix2<T> & _mat);
+        inline Matrix2 & operator += (const Matrix2<T> & _mat);
 
         /**
          * @brief Subtracts another matrix from this matrix.
          */
-        inline Matrix2<T> & operator -= (const Matrix2<T> & _mat);
+        inline Matrix2 & operator -= (const Matrix2<T> & _mat);
 
         /**
          * @brief Negates this matrix.
          */
-        inline Matrix2<T> operator - () const;
+        inline Matrix2 operator - () const;
 
         /**
          * @brief Multiplies two matrices.
          */
-        inline Matrix2<T> operator * (const Matrix2<T> & _mat) const;
+        inline Matrix2 operator * (const Matrix2<T> & _mat) const;
 
         /**
          * @brief Multiplies all elements in a matrix with the provided number.
          */
-        inline Matrix2<T> operator * (T _v) const;
+        inline Matrix2 operator * (T _v) const;
 
         /**
          * @brief Multiplies a matrix with a column vector.
@@ -154,12 +154,12 @@ namespace crunch
         /**
          * @brief Multiplies this matrix with another matrix.
          */
-        inline Matrix2<T> & operator *= (const Matrix2<T> & _mat);
+        inline Matrix2 & operator *= (const Matrix2<T> & _mat);
 
         /**
          * @brief Multiplies all elements in this matrix with the provided number.
          */
-        inline Matrix2<T> & operator *= (T _v);
+        inline Matrix2 & operator *= (T _v);
 
         /**
          * @brief Scales this matrix.
@@ -167,7 +167,7 @@ namespace crunch
          * This will effectively create a scaling matrix and multiply it with
          * this matrix: *this = scaling(_s) * *this;
          */
-        inline void scale(T _s);
+        inline Matrix2 & scale(T _s);
 
         /**
          * @brief Scales this matrix.
@@ -175,7 +175,7 @@ namespace crunch
          * This will effectively create a scaling matrix and multiply it with
          * this matrix: *this = scaling(_x, _y) * *this;
          */
-        inline void scale(T _x, T _y);
+        inline Matrix2 & scale(T _x, T _y);
 
         /**
          * @brief Scales this matrix.
@@ -183,7 +183,7 @@ namespace crunch
          * This will effectively create a scaling matrix and multiply it with
          * this matrix: *this = scaling(_vec) * *this;
          */
-        inline void scale(const Vector2<T> & _vec);
+        inline Matrix2 & scale(const Vector2<T> & _vec);
 
         /**
          * @brief Rotates this matrix by an angle in radians.
@@ -191,7 +191,7 @@ namespace crunch
          * This will effectively create a rotation matrix and multiply it with
          * this matrix: *this = rotation(_radians) * *this;
          */
-        inline void rotate(T _radians);
+        inline Matrix2 & rotate(T _radians);
 
         /**
          * @brief Returns a pointer to the memory block of this matrix.
@@ -457,27 +457,31 @@ namespace crunch
     //____________________________________
 
     template<class T>
-    inline void Matrix2<T>::scale(T _s)
+    inline Matrix2<T> & Matrix2<T>::scale(T _s)
     {
         *this = scaling(_s) * *this;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix2<T>::scale(T _x, T _y)
+    inline Matrix2<T> & Matrix2<T>::scale(T _x, T _y)
     {
         *this = scaling(Vector3<T>(_x, _y)) * *this;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix2<T>::scale(const Vector2<T> & _vec)
+    inline Matrix2<T> & Matrix2<T>::scale(const Vector2<T> & _vec)
     {
         *this = scaling(_vec) * *this;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix2<T>::rotate(T _radians)
+    inline Matrix2<T> & Matrix2<T>::rotate(T _radians)
     {
         *this = rotation(_radians) * *this;
+        return *this;
     }
 
 
