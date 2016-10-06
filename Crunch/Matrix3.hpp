@@ -358,6 +358,11 @@ namespace crunch
         static inline Matrix3 skewMatrix2D(T _radiansX, T _radiansY);
 
         /**
+        * @brief Returns a 2D skew matrix.
+        */
+        static inline Matrix3 skewMatrix2D(const Vector2<T> & _rads);
+
+        /**
          * @brief Returns a uniform scaling matrix.
          * @param _scale The scaling factor.
          */
@@ -894,6 +899,12 @@ namespace crunch
         return Matrix3<T>(Vector3<T>(1, std::tan(_radiansY), 0),
                           Vector3<T>(std::tan(_radiansX), 1, 0),
                           Vector3<T>(0, 0, 1));
+    }
+
+    template<class T>
+    inline Matrix3<T> Matrix3<T>::skewMatrix2D(const Vector2<T> & _rads)
+    {
+        return skewMatrix2D(_rads.x, _rads.y);
     }
 
     template<class T>
