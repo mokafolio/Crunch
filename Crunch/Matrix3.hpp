@@ -378,6 +378,27 @@ namespace crunch
         static inline Matrix3 scaling(T _x, T _y, T _z);
 
 
+        /**
+         * @brief Returns a 2D scaling matrix.
+         * @param _s The scaling factor along the xy axis.
+         */
+        static inline Matrix3 scaling2D(const Vector2<T> & _s);
+
+        /**
+         * @brief Returns a 2D scaling matrix.
+         * @param _x The scaling factor along the x axis.
+         * @param _y The scaling factor along the y axis.
+         */
+        static inline Matrix3 scaling2D(T _x, T _y);
+
+
+        /**
+         * @brief Returns a 2D scaling matrix.
+         * @param _s The scaling factor along the xy axis.
+         */
+        static inline Matrix3 scaling2D(T _s);
+
+
     private:
 
         Vector3<T> m_col0;
@@ -893,6 +914,24 @@ namespace crunch
     inline Matrix3<T> Matrix3<T>::scaling(T _x, T _y, T _z)
     {
         return scaling(Vector3<T>(_x, _y, _z));
+    }
+
+    template<class T>
+    inline Matrix3<T> Matrix3<T>::scaling2D(const Vector2<T> & _s)
+    {
+        return scaling(Vector3<T>(_s.x, _s.y, 1.0));
+    }
+
+    template<class T>
+    inline Matrix3<T> Matrix3<T>::scaling2D(T _x, T _y)
+    {
+        return scaling2D(Vector2<T>(_x, _y));
+    }
+
+    template<class T>
+    inline Matrix3<T> Matrix3<T>::scaling2D(T _s)
+    {
+        return scaling2D(Vector2<T>(_s));
     }
 }
 
