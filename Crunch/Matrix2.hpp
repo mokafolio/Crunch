@@ -459,28 +459,28 @@ namespace crunch
     template<class T>
     inline Matrix2<T> & Matrix2<T>::scale(T _s)
     {
-        *this = scaling(_s) * *this;
+        *this *= scaling(_s);
         return *this;
     }
 
     template<class T>
     inline Matrix2<T> & Matrix2<T>::scale(T _x, T _y)
     {
-        *this = scaling(Vector3<T>(_x, _y)) * *this;
+        *this *= scaling(Vector3<T>(_x, _y));
         return *this;
     }
 
     template<class T>
     inline Matrix2<T> & Matrix2<T>::scale(const Vector2<T> & _vec)
     {
-        *this = scaling(_vec) * *this;
+        *this *= scaling(_vec);
         return *this;
     }
 
     template<class T>
     inline Matrix2<T> & Matrix2<T>::rotate(T _radians)
     {
-        *this = rotation(_radians) * *this;
+        *this *= rotation(_radians);
         return *this;
     }
 

@@ -107,7 +107,7 @@ namespace crunch
         /**
          * @brief Assign another matrix to this.
          */
-        inline Matrix4<T> & operator = (const Matrix4<T> & _other);
+        inline Matrix4 & operator = (const Matrix4 & _other);
 
         /**
          * @brief Access a column vector of the matrix.
@@ -142,47 +142,47 @@ namespace crunch
         /**
          * @brief Returns true if this matrix and the provided matrix are identical.
          */
-        inline bool operator == (const Matrix4<T> & _mat) const;
+        inline bool operator == (const Matrix4 & _mat) const;
 
         /**
          * @brief Returns true if this matrix and the provided matrix are not identical.
          */
-        inline bool operator != (const Matrix4<T> & _mat) const;
+        inline bool operator != (const Matrix4 & _mat) const;
 
         /**
          * @brief Adds two matrices.
          */
-        inline Matrix4<T> operator + (const Matrix4<T> & _mat) const;
+        inline Matrix4 operator + (const Matrix4 & _mat) const;
 
         /**
          * @brief Subtracts two matrices.
          */
-        inline Matrix4<T> operator - (const Matrix4<T> & _mat) const;
+        inline Matrix4 operator - (const Matrix4 & _mat) const;
 
         /**
          * @brief Adds another matrix to this matrix.
          */
-        inline Matrix4<T>  & operator += (const Matrix4<T> & _mat);
+        inline Matrix4 & operator += (const Matrix4 & _mat);
 
         /**
          * @brief Subtracts another matrix from this matrix.
          */
-        inline Matrix4<T>  & operator -= (const Matrix4<T> & _mat);
+        inline Matrix4  & operator -= (const Matrix4 & _mat);
 
         /**
          * @brief Negates this matrix.
          */
-        inline Matrix4<T> operator - () const;
+        inline Matrix4 operator - () const;
 
         /**
          * @brief Multiplies two matrices.
          */
-        inline Matrix4<T> operator * (const Matrix4<T> & _mat) const;
+        inline Matrix4 operator * (const Matrix4 & _mat) const;
 
         /**
          * @brief Multiplies all elements in a matrix with the provided number.
          */
-        inline Matrix4<T> operator * (T _v) const;
+        inline Matrix4 operator * (T _v) const;
 
         /**
          * @brief Multiplies a matrix with a column 3D vector.
@@ -199,12 +199,12 @@ namespace crunch
         /**
          * @brief Multiplies this matrix with another matrix.
          */
-        inline Matrix4<T> & operator *= (const Matrix4<T> & _mat);
+        inline Matrix4 & operator *= (const Matrix4<T> & _mat);
 
         /**
          * @brief Multiplies all elements in this matrix with the provided number.
          */
-        inline Matrix4<T> & operator *= (T _v);
+        inline Matrix4 & operator *= (T _v);
 
         /**
          * @brief Translate this matrix.
@@ -212,19 +212,19 @@ namespace crunch
          * @param _y Translation along the y axis.
          * @param _z Translation along the z axis.
          */
-        inline void translate(T _x, T _y, T _z);
+        inline Matrix4 & translate(T _x, T _y, T _z);
 
         /**
          * @brief Translate this matrix.
          * @param _vec Translation vector.
          */
-        inline void translate(const Vector3<T> & _vec);
+        inline Matrix4 & translate(const Vector3<T> & _vec);
 
         /**
          * @brief Scale this matrix.
          * @param _s Uniform scaling factor.
          */
-        inline void scale(T _s);
+        inline Matrix4 & scale(T _s);
 
         /**
          * @brief Scale this matrix in 3D.
@@ -232,24 +232,24 @@ namespace crunch
          * @param _y The scaling factor along the y axis.
          * @param _z The scaling factor along the z axis.
          */
-        inline void scale(T _x, T _y, T _z);
+        inline Matrix4 & scale(T _x, T _y, T _z);
 
         /**
          * @brief Scale this matrix in 3D.
          * @param _vec The scaling factors along the three axis.
          */
-        inline void scale(const Vector3<T> & _vec);
+        inline Matrix4 & scale(const Vector3<T> & _vec);
 
         /**
          * @brief Rotate this matrix by an angle in radians around the provided axis.
          */
-        inline void rotate(T _radians, const Vector3<T> & _axis);
+        inline Matrix4 & rotate(T _radians, const Vector3<T> & _axis);
 
         /**
          * @brief Rotate this matrix by the orientation of a quaternion.
          * @param _quat The quaternion expressing the orientation.
          */
-        inline void rotate(const Quaternion<T> & _quat);
+        inline Matrix4 & rotate(const Quaternion<T> & _quat);
 
         /**
          * @brief Rotate this matrix by the provided euler angles in radians.
@@ -257,13 +257,13 @@ namespace crunch
          * @param _pitch Angle in radians.
          * @param _roll Angle in radians.
          */
-        inline void rotate(T _yaw, T _pitch, T _roll);
+        inline Matrix4 & rotate(T _yaw, T _pitch, T _roll);
 
         /**
          * @brief Rotate this matrix by the provided euler angles in radians.
          * @param _euler Vector holding the euler angles in radians.
          */
-        inline void rotate(const Vector3<T> & _euler);
+        inline Matrix4 & rotate(const Vector3<T> & _euler);
 
         /**
          * @brief Returns a pointer to the memory block of this matrix.
@@ -283,34 +283,34 @@ namespace crunch
         /**
          * @brief Returns an identity matrix.
          */
-        inline static Matrix4<T> identity();
+        inline static Matrix4 identity();
 
         /**
          * @brief Returns a matrix with all elements initialized to zero.
          */
-        inline static Matrix4<T> zero();
+        inline static Matrix4 zero();
 
         /**
          * @brief Returns a 3D translation matrix.
          */
-        inline static Matrix4<T> translation(const Vector3<T> & _vec);
+        inline static Matrix4 translation(const Vector3<T> & _vec);
 
         /**
          * @brief Returns a 3D translation matrix.
          */
-        inline static Matrix4<T> translation(T _x, T _y, T _z);
+        inline static Matrix4 translation(T _x, T _y, T _z);
 
         /**
          * @brief Returns a scaling matrix.
          * @param _scale The scaling factor along the three axis.
          */
-        inline static Matrix4<T> scaling(const Vector3<T> & _vec);
+        inline static Matrix4 scaling(const Vector3<T> & _vec);
 
         /**
          * @brief Returns a uniform scaling matrix.
          * @param _scale The scaling factor.
          */
-        inline static Matrix4<T> scaling(T _s);
+        inline static Matrix4 scaling(T _s);
 
         /**
          * @brief Returns a scaling matrix.
@@ -318,20 +318,20 @@ namespace crunch
          * @param _y The scaling factor along the y axis.
          * @param _z The scaling factor along the z axis.
          */
-        inline static Matrix4<T> scaling(T _x, T _y, T _z);
+        inline static Matrix4 scaling(T _x, T _y, T _z);
 
         /**
          * @brief Returns a 3D rotation matrix.
          * @param _radians Angle in radians.
          * @param _axis Rotation axis.
          */
-        inline static Matrix4<T> rotation(T _radians, const Vector3<T> & _axis);
+        inline static Matrix4 rotation(T _radians, const Vector3<T> & _axis);
 
         /**
          * @brief Returns a 3D rotation matrix from a quaternion.
          * @param _quat The quaternion expressing the orientation.
          */
-        inline static Matrix4<T> rotation(const Quaternion<T> & _quat);
+        inline static Matrix4 rotation(const Quaternion<T> & _quat);
 
         /**
          * @brief Returns a 3D rotation matrix from euler angles.
@@ -339,13 +339,13 @@ namespace crunch
          * @param _pitch Angle in radians.
          * @param _roll Angle in radians.
          */
-        inline static Matrix4<T> rotation(T _yaw, T _pitch, T _roll);
+        inline static Matrix4 rotation(T _yaw, T _pitch, T _roll);
 
         /**
          * @brief Returns a 3D rotation matrix from euler angles.
          * @param _euler Vector holding the euler angles in radians.
          */
-        inline static Matrix4<T> rotation(const Vector3<T> & _euler);
+        inline static Matrix4 rotation(const Vector3<T> & _euler);
 
         /**
          * @brief Returns an orthographic projection matrix.
@@ -356,7 +356,7 @@ namespace crunch
          * @param _near The value for the near clipping plane.
          * @param _far The value for the far clipping plane.
          */
-        inline static Matrix4<T> ortho(T _left, T _right, T _bottom, T _top, T _near, T _far);
+        inline static Matrix4 ortho(T _left, T _right, T _bottom, T _top, T _near, T _far);
 
         /**
          * @brief Returns a perspective frustum projection matrix.
@@ -367,7 +367,7 @@ namespace crunch
          * @param _near The value for the near clipping plane. Must be positive.
          * @param _far The value for the far clipping plane. Must be positive.
          */
-        inline static Matrix4<T> frustum(T _left, T _right, T _bottom, T _top, T _near, T _far);
+        inline static Matrix4 frustum(T _left, T _right, T _bottom, T _top, T _near, T _far);
 
         /**
          * @brief Returns a perspective projection matrix.
@@ -377,7 +377,7 @@ namespace crunch
          * @param _near The value for the near clipping plane. Must be positive.
          * @param _far The value for the far clipping plane. Must be positive.
          */
-        inline static Matrix4<T> perspective(T _fovy, T _aspect, T _near, T _far);
+        inline static Matrix4 perspective(T _fovy, T _aspect, T _near, T _far);
 
         /**
          * @brief Returns a look at viewing transformation matrix.
@@ -386,7 +386,7 @@ namespace crunch
          * This is the point that the camera is looking at.
          * @param _up Specifies the direction of the up vector.
          */
-        inline static Matrix4<T> lookAt(const Vector3<T> & _eye, const Vector3<T> & _center, const Vector3<T> & _up);
+        inline static Matrix4 lookAt(const Vector3<T> & _eye, const Vector3<T> & _center, const Vector3<T> & _up);
 
     private:
 
@@ -690,61 +690,70 @@ namespace crunch
     //____________________________________
 
     template<class T>
-    inline void Matrix4<T>::translate(T _x, T _y, T _z)
+    inline Matrix4<T> & Matrix4<T>::translate(T _x, T _y, T _z)
     {
         m_col3.x += _x;
         m_col3.y += _y;
         m_col3.z += _z;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::translate(const Vector3<T> & _vec)
+    inline Matrix4<T> & Matrix4<T>::translate(const Vector3<T> & _vec)
     {
         m_col3.x += _vec.x;
         m_col3.y += _vec.y;
         m_col3.z += _vec.z;
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::scale(T _s)
+    inline Matrix4<T> & Matrix4<T>::scale(T _s)
     {
-        *this = scaling(_s) * *this;
+        *this *= scaling(_s);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::scale(T _x, T _y, T _z)
+    inline Matrix4<T> & Matrix4<T>::scale(T _x, T _y, T _z)
     {
-        *this = scaling(_x, _y, _z) * *this;
+        *this *= scaling(_x, _y, _z);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::scale(const Vector3<T> & _vec)
+    inline Matrix4<T> & Matrix4<T>::scale(const Vector3<T> & _vec)
     {
-        *this = scaling(_vec) * *this;
+        *this *= scaling(_vec);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::rotate(T _radians, const Vector3<T> & _axis)
+    inline Matrix4<T> & Matrix4<T>::rotate(T _radians, const Vector3<T> & _axis)
     {
-        *this = rotation(_radians, _axis) * *this;
+        *this *= rotation(_radians, _axis);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::rotate(const Quaternion<T> & _quat)
+    inline Matrix4<T> & Matrix4<T>::rotate(const Quaternion<T> & _quat)
     {
-        *this = rotation(_quat) * *this;
+        *this *= rotation(_quat);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::rotate(T _yaw, T _pitch, T _roll)
+    inline Matrix4<T> & Matrix4<T>::rotate(T _yaw, T _pitch, T _roll)
     {
-        *this = rotation(_yaw, _pitch, _roll) * *this;
+        *this *= rotation(_yaw, _pitch, _roll);
+        return *this;
     }
 
     template<class T>
-    inline void Matrix4<T>::rotate(const Vector3<T> & _euler)
+    inline Matrix4<T> & Matrix4<T>::rotate(const Vector3<T> & _euler)
     {
-        *this = rotation(_euler) * *this;
+        *this *= rotation(_euler);
+        return *this;
     }
 
 
