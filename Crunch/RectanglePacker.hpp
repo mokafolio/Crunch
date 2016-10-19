@@ -68,6 +68,10 @@ namespace crunch
 
         stick::Float32 maxHeight() const;
 
+        stick::Float32 currentWidth() const;
+
+        stick::Float32 currentHeight() const;
+
     private:
 
         PlacementResult placeRectangleHelper(const RectangleType & _rect);
@@ -316,6 +320,18 @@ namespace crunch
     stick::Float32 RectanglePackerT<T>::maxHeight() const
     {
         return m_maxHeight;
+    }
+
+    template<class T>
+    stick::Float32 RectanglePackerT<T>::currentWidth() const
+    {
+        return m_currentWidth;
+    }
+
+    template<class T>
+    stick::Float32 RectanglePackerT<T>::currentHeight() const
+    {
+        return m_currentHeight;
     }
 
     typedef RectanglePackerT<stick::Float32> RectanglePacker;
