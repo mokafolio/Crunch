@@ -153,7 +153,7 @@ namespace crunch
 
             if (diffX >= 0 && diffY >= 0)
             {
-                if (m_freeRects[i].min().y < bestX)
+                if (m_freeRects[i].min().x < bestX)
                 {
                     bestX = m_freeRects[i].min().x;
                     bestRectIndex = i;
