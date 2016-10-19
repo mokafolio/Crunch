@@ -144,23 +144,21 @@ namespace crunch
     {
         bool bFoundFittingRect = false;
         stick::Size bestRectIndex = 0;
-        ValueType bestY = std::numeric_limits<ValueType>::max();
+        ValueType bestX = std::numeric_limits<ValueType>::max();
 
         for (stick::Size i = 0; i < m_freeRects.count(); ++i)
         {
-
-            //printf("TRYING TO FIT %f, %f, %f, %f\n", m_freeRects[i].min().x, m_freeRects[i].min().y, m_freeRects[i].max().x, m_freeRects[i].max().y);
             ValueType diffX = m_freeRects[i].width() - _rect.width();
             ValueType diffY = m_freeRects[i].height() - _rect.height();
 
             if (diffX >= 0 && diffY >= 0)
             {
-                if (m_freeRects[i].min().y < bestY)
+                if (m_freeRects[i].min().y < bestX)
                 {
-                    bestY = m_freeRects[i].min().y;
+                    bestX = m_freeRects[i].min().x;
                     bestRectIndex = i;
                     bFoundFittingRect = true;
-                    if (bestY == 0)
+                    if (bestX == 0)
                         break;
                 }
             }
@@ -258,7 +256,7 @@ namespace crunch
                 if (m_currentWidth < m_maxHeight || m_currentHeight < m_maxHeight)
                 {
                     //if we can't fit it, we resize the available space and adjust the freeRects accordingly
-                    if (m_currentWidth < m_currentHeight)
+                    if (m_currentWidth <= m_currentHeight)
                     {
                         ValueType twice = std::min(m_currentWidth * 2, m_maxWidth);
                         if (m_freeRects.count())
