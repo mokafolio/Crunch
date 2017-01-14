@@ -118,6 +118,13 @@ const Suite spec[] =
         Line2f line4(Vec2f(200, -50), Vec2f(200, 50));
         auto result3 = intersect(line, line4);
         EXPECT(!result3);
+
+        //Vector2(383.998322, 233.659241) Vector2(386.404022, 242.288071) Vector2(381.450195, 325.174103) Vector2(381.100739, 336.598877)
+        Line2f a(Vec2f(383.998322, 233.659241), Vec2f(386.404022, 242.288071));
+        Line2f b(Vec2f(381.450195, 325.174103), Vec2f(381.100739, 336.598877));
+
+        auto result4 = intersect(a, b);
+        EXPECT(!result4);
     }
 };
 
