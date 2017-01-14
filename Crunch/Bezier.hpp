@@ -805,8 +805,6 @@ namespace crunch
         }
 
         return a * ret;
-
-        //return integrateGauss([](const VectorType & _a, const VectorType & _b){ return arcLength()})
     }
 
     template<class T>

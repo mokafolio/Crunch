@@ -97,6 +97,27 @@ const Suite spec[] =
         Randomizer rand;
         for(int i=0; i<10; ++i)
             EXPECT(packer2.placeRectangle(Rectangle<Float32>(0, 0, rand.randomf(2, 10), rand.randomf(2, 10))));
+    },
+    SUITE("Line Tests")
+    {
+        Line2f line(Vec2f(0, 0), Vec2f(100, 0));
+        EXPECT(line.positionOne() == Vec2f(0, 0));
+        EXPECT(line.positionTwo() == Vec2f(100, 0));
+        EXPECT(normalize(line.direction()) == Vec2f(1, 0));
+
+        Line2f line2(Vec2f(50, -50), Vec2f(50, 50));
+        auto result = intersect(line, line2);
+        EXPECT(result);
+        EXPECT(result.intersections().count() == 1);
+        EXPECT(result.intersections()[0] == Vec2f(50, 0));
+
+        Line2f line3(Vec2f(0, 10), Vec2f(100, 10));
+        auto result2 = intersect(line, line3);
+        EXPECT(!result2);
+
+        Line2f line4(Vec2f(200, -50), Vec2f(200, 50));
+        auto result3 = intersect(line, line4);
+        EXPECT(!result3);
     }
 };
 

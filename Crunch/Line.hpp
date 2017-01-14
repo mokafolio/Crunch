@@ -215,8 +215,9 @@ namespace crunch
 
         Vector2<T> dir = _b.positionOne() - _a.positionOne();
         T t = (dir.x * dirB.y - dir.y * dirB.x) / cross;
-
-        results.append(_a.positionOne() + dirA * t);
+        
+        if(t >= 0 && t <= 1)
+            results.append(_a.positionOne() + dirA * t);
 
         return IntersectionResult<Vector2<T> >(results);
     }
