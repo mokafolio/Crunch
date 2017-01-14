@@ -207,9 +207,8 @@ namespace crunch
         //compute the intersection
         T cross = dirA.x * dirB.y - dirA.y * dirB.x;
 
-        printf("cross %f\n", cross);
-        //parallel case
-        if (std::abs(cross) < std::numeric_limits<T>::epsilon())
+        //parallel case (TODO: use epsilon)
+        if (cross == 0)
             return IntersectionResult<Vector2<T> >();
 
         ResultArray results;
