@@ -3,7 +3,9 @@
 
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
+#include <Crunch/CommonFunc.hpp>
 #include <Stick/DynamicArray.hpp> //for intersection results (see comments below)
+#include <limits>
 
 namespace crunch
 {
@@ -208,17 +210,17 @@ namespace crunch
         T cross = dirA.x * dirB.y - dirA.y * dirB.x;
 
         //parallel case (TODO: use epsilon)
-        if (cross == 0)
+        if (abs(cross) < std::numeric_limits<T>::epsilon())
             return IntersectionResult<Vector2<T> >();
 
         ResultArray results;
 
-        Vector2<T> dir = _b.positionOne() - _a.positionOne();
-        T d = (dir.x * dirB.y - dir.y * dirB.x) / cross;
-        T t = (dir.x * dirA.y - dir.y * dirA.x) / cross;
-            
+        Vector2<T> dir = _a.positionOne() - _b.positionOne();
+        T d = (dir.y * dirB.x - dir.x * dirB.y) / cross;
+        T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
+ 
         if(t >= 0 && t <= 1 && d >= 0 && d <= 1)
-            results.append(_a.positionOne() + dirA * t);
+            results.append(_a.positionOne() + dirA * d);
 
         return IntersectionResult<Vector2<T> >(results);
     }
