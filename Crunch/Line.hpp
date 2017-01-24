@@ -34,9 +34,9 @@ namespace crunch
         Line();
 
         /**
-         * @brief Constructs a line from that goes through the provided points.
+         * @brief Constructs a line from that goes through the provided position with with provided direction.
          */
-        Line(const VectorType & _a, const VectorType & _b);
+        Line(const VectorType & _position, const VectorType & _direction);
 
         /**
          * @brief Copy constructs a line from an existing line.
@@ -51,12 +51,7 @@ namespace crunch
         /**
          * @brief Returns the first internal position on the line.
          */
-        const VectorType & positionOne() const;
-
-        /**
-         * @brief Returns the second internal position on the line.
-         */
-        const VectorType & positionTwo() const;
+        const VectorType & position() const;
 
         /**
          * @brief Returns the direction of the line (not normalized).
@@ -75,33 +70,35 @@ namespace crunch
         stick::Int32 side(const VectorType & _point) const;
 
 
+        static Line fromPoints(const VectorType & _a, const VectorType & _b);
+
+
     private:
 
-        VectorType m_positionOne;
-
-        VectorType m_positionTwo;
+        VectorType m_position;
+        VectorType m_direction;
     };
 
     template<class T>
     Line<T>::Line() :
-        m_positionOne(0),
-        m_positionTwo(0)
+        m_position(0),
+        m_direction(0)
     {
 
     }
 
     template<class T>
-    Line<T>::Line(const VectorType & _a, const VectorType & _b) :
-        m_positionOne(_a),
-        m_positionTwo(_b)
+    Line<T>::Line(const VectorType & _position, const VectorType & _direction) :
+        m_position(_position),
+        m_direction(_direction)
     {
 
     }
 
     template<class T>
     Line<T>::Line(const Line & _other) :
-        m_positionOne(_other.m_positionOne),
-        m_positionTwo(_other.m_positionTwo)
+        m_position(_other.m_position),
+        m_direction(_other.m_direction)
     {
 
     }
@@ -109,27 +106,21 @@ namespace crunch
     template<class T>
     Line<T> & Line<T>::operator = (const Line & _other)
     {
-        m_positionOne = _other.m_positionOne;
-        m_positionTwo = _other.m_positionTwo;
+        m_position = _other.m_position;
+        m_direction = _other.m_direction;
         return *this;
     }
 
     template<class T>
-    const typename Line<T>::VectorType & Line<T>::positionOne() const
+    const typename Line<T>::VectorType & Line<T>::position() const
     {
-        return m_positionOne;
-    }
-
-    template<class T>
-    const typename Line<T>::VectorType & Line<T>::positionTwo() const
-    {
-        return m_positionTwo;
+        return m_position;
     }
 
     template<class T>
     typename Line<T>::VectorType Line<T>::direction() const
     {
-        return m_positionTwo - m_positionOne;
+        return m_direction;
     }
 
     template<class T>
@@ -142,20 +133,22 @@ namespace crunch
     stick::Int32 Line<T>::side(const VectorType & _point) const
     {
         VectorType dirA = direction();
-        VectorType dirB = _point - m_positionOne;
+        VectorType dirB = m_position - _point;
 
         ValueType cross = dirB.x * dirA.y - dirB.y * dirA.x;
-
-        if (cross == 0)
+        
+        /*if (cross == 0)
         {
             cross = dot(dirA, dirB);
+            printf("cross2 %f\n", cross);
             if (cross > 0)
             {
                 cross = dot(dirB - dirA, dirA);
+                printf("cross3 %f\n", cross);
                 if (cross < 0)
                     cross = 0;
             }
-        }
+        }*/
 
         return cross < 0 ? -1 : cross > 0 ? 1 : 0;
     }
@@ -209,18 +202,18 @@ namespace crunch
         //compute the intersection
         T cross = dirA.x * dirB.y - dirA.y * dirB.x;
 
-        //parallel case (TODO: use epsilon)
+        //parallel case
         if (abs(cross) < std::numeric_limits<T>::epsilon())
             return IntersectionResult<Vector2<T> >();
 
         ResultArray results;
 
-        Vector2<T> dir = _a.positionOne() - _b.positionOne();
+        Vector2<T> dir = _a.position() - _b.position();
         T d = (dir.y * dirB.x - dir.x * dirB.y) / cross;
-        T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
- 
-        if(t >= 0 && t <= 1 && d >= 0 && d <= 1)
-            results.append(_a.positionOne() + dirA * d);
+        //T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
+        /*if(t >= 0 && t <= 1 && d >= 0 && d <= 1)*/
+        
+        results.append(_a.position() + dirA * d);
 
         return IntersectionResult<Vector2<T> >(results);
     }
