@@ -8,6 +8,7 @@
 #include <Crunch/Constants.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/Line.hpp>
+#include <Crunch/LineSegment.hpp>
 #include <Crunch/Matrix2.hpp>
 #include <Crunch/Matrix3.hpp>
 #include <Crunch/Matrix4.hpp>
@@ -122,23 +123,42 @@ const Suite spec[] =
 
         //side tests
         auto sideA = line.side(Vec2f(50, -50));
-        EXPECT(sideA == -1);
+        EXPECT(sideA == 1);
         auto sideB = line.side(Vec2f(50, 50));
-        EXPECT(sideB == 1);
+        EXPECT(sideB == -1);
         auto sideC = line.side(Vec2f(50, 0));
         EXPECT(sideC == 0);
+    },
+    SUITE("LineSegment Tests")
+    {
+        LineSegment2f line(Vec2f(0, 0), Vec2f(100, 0));
+        EXPECT(line.positionOne() == Vec2f(0, 0));
+        EXPECT(line.positionTwo() == Vec2f(100, 0));
 
-        //Vector2(383.998322, 233.659241) Vector2(386.404022, 242.288071) Vector2(381.450195, 325.174103) Vector2(381.100739, 336.598877)
-        // Line2f a(Vec2f(383.998322, 233.659241), Vec2f(386.404022, 242.288071));
-        // Line2f b(Vec2f(381.450195, 325.174103), Vec2f(381.100739, 336.598877));
-        // auto result4 = intersect(a, b);
-        // EXPECT(!result4);
+        LineSegment2f line2(Vec2f(50, -50), Vec2f(50, 50));
+        auto result = intersect(line, line2);
+        EXPECT(result);
+        EXPECT(result.intersections().count() == 1);
+        EXPECT(result.intersections()[0] == Vec2f(50, 0));
 
-        //Vector2(396.336121, 361.686096) Vector2(398.841766, 373.529999) Vector2(403.197205, 360.393005)Vector2(395.950623, 363.616119)
-        // Line2f c(Vec2f(396.336121, 361.686096), Vec2f(398.841766, 373.529999));
-        // Line2f d(Vec2f(403.197205, 360.393005), Vec2f(395.950623, 363.616119));
-        // auto result5 = intersect(c, d);
-        // EXPECT(!result5);
+        LineSegment2f line3(Vec2f(-50, -50), Vec2f(-50, 50));
+        auto result2 = intersect(line, line3);
+        EXPECT(!result2);
+
+        LineSegment2f line4(Vec2f(150, -50), Vec2f(150, 50));
+        auto result3 = intersect(line, line4);
+        EXPECT(!result3);
+
+        //side tests
+        auto sideA = line.side(Vec2f(50, -50));
+        EXPECT(sideA == 1);
+        auto sideB = line.side(Vec2f(50, 50));
+        EXPECT(sideB == -1);
+        auto sideC = line.side(Vec2f(50, 0));
+        EXPECT(sideC == 0);
+        //this is on the extended line (but not between the two provided points)
+        auto sideD = line.side(Vec2f(500, 0));
+        EXPECT(sideD == 1);
     }
 };
 

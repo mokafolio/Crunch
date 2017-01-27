@@ -1,0 +1,1 @@
+//@TODO: ray version of LineSegment/Line (i.e. infinite but with starting point)

@@ -26,7 +26,9 @@ Crunch/CommonFunc.hpp
 Crunch/Constants.hpp
 Crunch/ExponentialFunc.hpp
 Crunch/GeometricFunc.hpp
+Crunch/IntersectionResult.hpp
 Crunch/Line.hpp
+Crunch/LineSegment.hpp
 Crunch/Matrix2.hpp
 Crunch/Matrix3.hpp
 Crunch/Matrix4.hpp

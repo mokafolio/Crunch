@@ -4,7 +4,7 @@
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
 #include <Crunch/CommonFunc.hpp>
-#include <Stick/DynamicArray.hpp> //for intersection results (see comments below)
+#include <Crunch/IntersectionResult.hpp>
 #include <limits>
 
 namespace crunch
@@ -133,60 +133,18 @@ namespace crunch
     stick::Int32 Line<T>::side(const VectorType & _point) const
     {
         VectorType dirA = direction();
-        VectorType dirB = m_position - _point;
+        VectorType dirB = _point - m_position;
 
         ValueType cross = dirB.x * dirA.y - dirB.y * dirA.x;
-        
-        /*if (cross == 0)
-        {
-            cross = dot(dirA, dirB);
-            printf("cross2 %f\n", cross);
-            if (cross > 0)
-            {
-                cross = dot(dirB - dirA, dirA);
-                printf("cross3 %f\n", cross);
-                if (cross < 0)
-                    cross = 0;
-            }
-        }*/
 
         return cross < 0 ? -1 : cross > 0 ? 1 : 0;
     }
 
-    //TODO, clean this intersection stuff up, move to separate header, document.
-    template<class VT>
-    class IntersectionResult
+    template<class T>
+    Line<T> Line<T>::fromPoints(const VectorType & _a, const VectorType & _b)
     {
-    public:
-
-        typedef stick::DynamicArray<VT> ResultArray;
-
-        IntersectionResult()
-        {
-
-        }
-
-        IntersectionResult(const ResultArray & _intersections) :
-            m_intersections(_intersections)
-        {
-
-        }
-
-        //this is enough for safe bool idiom in c++11
-        explicit operator bool() const
-        {
-            return m_intersections.count();
-        }
-
-        const ResultArray & intersections() const
-        {
-            return m_intersections;
-        }
-
-    private:
-
-        ResultArray m_intersections;
-    };
+        return Line<T>(_a, _b - _a);
+    }
 
     template<class VT>
     IntersectionResult<VT> intersect(const Line<VT> & _a, const Line<VT> & _b);
