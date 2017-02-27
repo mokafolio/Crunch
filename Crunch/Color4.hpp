@@ -33,7 +33,7 @@ namespace crunch
         /**
          * @brief Constructs a color and sets its channels to the provided values.
          */
-        Color4(ValueType _one, ValueType _two, ValueType _three, ValueType _four);
+        Color4(ValueType _one, ValueType _two, ValueType _three, ValueType _four = 1.0);
 
         /**
          * @brief Returns true if both colors are the same.

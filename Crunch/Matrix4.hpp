@@ -689,6 +689,8 @@ namespace crunch
     // Non static members to translate / scale / rotate an existing matrix
     //____________________________________
 
+    //@TODO: THESE TRANSLATE IMPLEMENTATIONS ARE WRONG
+    // WE NEED TO DO A MATRIX MULTIPLICATION HERE, AT LEAST FOR THE TRANSLATION COLUMN
     template<class T>
     inline Matrix4<T> & Matrix4<T>::translate(T _x, T _y, T _z)
     {
@@ -698,6 +700,8 @@ namespace crunch
         return *this;
     }
 
+    //@TODO: THESE TRANSLATE IMPLEMENTATIONS ARE WRONG
+    // WE NEED TO DO A MATRIX MULTIPLICATION HERE, AT LEAST FOR THE TRANSLATION COLUMN
     template<class T>
     inline Matrix4<T> & Matrix4<T>::translate(const Vector3<T> & _vec)
     {
