@@ -604,7 +604,7 @@ namespace crunch
         //find quadratic roots for both axis
         ExtremaResult res;
         res.count = 0;
-        extrema(a.x, b.x, c.y, res);
+        extrema(a.x, b.x, c.x, res);
         extrema(a.y, b.y, b.y, res);
 
         return res;
