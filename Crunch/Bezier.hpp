@@ -605,7 +605,7 @@ namespace crunch
         ExtremaResult res;
         res.count = 0;
         extrema(a.x, b.x, c.x, res);
-        extrema(a.y, b.y, b.y, res);
+        extrema(a.y, b.y, c.y, res);
 
         return res;
     }
