@@ -942,7 +942,7 @@ namespace crunch
 
         Vector3<T> f = normalize(_center - _eye);
         Vector3<T> s = normalize(cross(f, _up));
-        Vector3<T> u = normalize(cross(s, f));
+        Vector3<T> u = cross(s, f);
 
         ret = Matrix4<T>(s.x, s.y, s.z, -dot(s, _eye),
                          u.x, u.y, u.z, -dot(u, _eye),

@@ -185,6 +185,19 @@ namespace crunch
         RectangleType bounds(ValueType _padding = 0) const;
 
         /**
+         * From paper.js src:
+         * Returns the t values for the "peaks" of the curve. The peaks are
+         * calculated by finding the roots of the dot product of the first and
+         * second derivative.
+         *
+         * Peaks are locations sharing some qualities of curvature extrema but
+         * are cheaper to compute. They fulfill their purpose here quite well.
+         * See:
+         * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
+         */
+        void peaks(stick::DynamicArray<ValueType> & _peaks) const;
+
+        /**
          * @brief Calculates the length of the curve between two parameters.
          * @param _t0 Parameter between 0 and 1.
          * @param _t1 Parameter between 0 and 1.
@@ -527,6 +540,29 @@ namespace crunch
         detail::setMinMaxForRoots(yRoots, tMin, tMax, _padding, min.y, max.y, *this, false);
 
         return RectangleType(min, max);
+    }
+
+    template<class T>
+    void BezierCubic<T>::peaks(stick::DynamicArray<ValueType> & _peaks) const
+    {
+        ValueType ax = -m_pointOne.x + 3 * m_handleOne.x - 3 * m_handleTwo.x + m_pointTwo.x;
+        ValueType bx = 3 * m_pointOne.x - 6 * m_handleOne.x + 3 * m_handleTwo.x;
+        ValueType cx = -3 * m_pointOne.x + 3 * m_handleOne.x;
+        ValueType ay = -m_pointOne.y + 3 * m_handleOne.y - 3 * m_handleTwo.y + m_pointTwo.y;
+        ValueType by = 3 * m_pointOne.y - 6 * m_handleOne.y + 3 * m_handleTwo.y;
+        ValueType cy = -3 * m_pointOne.y + 3 * m_handleOne.y;
+
+        //@TODO: Double check if these epsilon values make sense (most likely need adjustment)
+        ValueType tMin = std::numeric_limits<ValueType>::epsilon();
+        ValueType tMax = 1.0 - tMin;
+        crunch::solveCubic(9 * (ax * ax + ay * ay),
+                           9 * (ax * bx + by * ay),
+                           2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+                           (cx * bx + by * cy),
+                           // Exclude 0 and 1 as we don't count them as peaks.
+                           _peaks, tMin, tMax);
+        
+        std::sort(_peaks.begin(), _peaks.end());
     }
 
     template<class T>
