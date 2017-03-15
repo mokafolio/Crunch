@@ -76,120 +76,104 @@ namespace crunch
     }
 
     template<class T>
-    stick::Int32 solveQuadratic(T _a,
-                                T _b,
-                                T _c,
-                                stick::DynamicArray<T> & _outRoots,
-                                T _min = 0,
-                                T _max = 1)
+    struct QuadraticResult
     {
-        //TODO: Update this to the recent implementation from paper.js develop branch
-        /*
-                static T s_epsilon = std::numeric_limits<T>::epsilon();
+        T values[2];
+        stick::Int32 count;
+    };
 
-                //can have two (good) roots at max
-                _outRoots.reserve(2);
-
-                // From paper.js Numerical.js:
-                // Code ported over and adapted from Uintah library (MIT license).
-                // If a is 0, equation is actually linear, return 0 or 1 easy roots.
-                if (crunch::abs(_a) < s_epsilon)
-                {
-                    if (crunch::abs(_b) >= s_epsilon)
-                    {
-                        _outRoots.append(crunch::min(_max, crunch::max(_min, -_c / _b)));
-                        return 1;
-                    }
-
-                    // If all the coefficients are 0, we have infinite solutions!
-                    return -1; // Infinite or 0 solutions
-                }
-
-                // Convert to normal form: x^2 + px + q = 0
-                // NOTE: We do use stick::Float64 here no matter what the internal data type is
-                // because stick::Float32 does not have enough precision for a lot of cases
-                stick::Float64 p = _b / (2.0 * _a);
-                stick::Float64 q = _c / _a;
-                stick::Float64 p2 = p * p;
-                if (p2 < q - s_epsilon)
-                    return 0;
-
-                stick::Float64 s = p2 > q ? sqrt(p2 - q) : 0;
-                _outRoots.append(crunch::min((stick::Float64)_max, crunch::max((stick::Float64)_min, s - p)));
-                printf("APPEND ONE %f\n", crunch::min((stick::Float64)_max, crunch::max((stick::Float64)_min, s - p)));
-                if (s > 0)
-                {
-                    printf("APPEND TWO\n");
-                    _outRoots.append(crunch::min((stick::Float64)_max, crunch::max((stick::Float64)_min, - s - p)));
-                }
-                return _outRoots.count();*/
-
+    template<class T>
+    QuadraticResult<T> solveQuadratic(T _a,
+                                      T _b,
+                                      T _c,
+                                      T _min = 0,
+                                      T _max = 1)
+    {
+        //@TODO: These epsilons most likely need adjustment!
         T eMin = _min - std::numeric_limits<T>::epsilon();
         T eMax = _max + std::numeric_limits<T>::epsilon();
         T x1, x2;
         x1 = x2 = std::numeric_limits<T>::infinity();
         T B = _b;
         T D;
-        // a, b, c are expected to be the coefficients of the equation:
-        // Ax² - 2Bx + C == 0, so we take b = -B/2:
-        _b /= -2.0;
-        D = _b * _b - _a * _c; // Discriminant
-
-        // If the discriminant is very small, we can try to pre-condition
-        // the coefficients, so that we may get better accuracy
-        if (D != 0 && abs(D) < std::numeric_limits<T>::epsilon())
-        {
-            // If the geometric mean of the coefficients is small enough
-            T gmC = pow(abs(_a * _b * _c), 1.0 / 3.0);
-            if (gmC < 1e-8)
-            {
-                // We multiply with a factor to normalize the coefficients.
-                // The factor is just the nearest exponent of 10, big enough
-                // to raise all the coefficients to nearly [-1, +1] range.
-                T mult = pow(10, abs(floor(log(gmC) * 0.4342944819032518))); //number is LOG10E
-                if (!std::isfinite(mult))
-                    mult = 0;
-                _a *= mult;
-                _b *= mult;
-                _c *= mult;
-                // Recalculate the discriminant
-                D = _b * _b - _a * _c;
-            }
-        }
-
         if (abs(_a) < std::numeric_limits<T>::epsilon())
         {
             // This could just be a linear equation
             if (abs(B) < std::numeric_limits<T>::epsilon())
-                return abs(_c) < std::numeric_limits<T>::epsilon() ? -1 : 0;
+            {
+                QuadraticResult<T> ret;
+                ret.count = 0;
+                if(abs(_c) < std::numeric_limits<T>::epsilon())
+                    ret.count = -1;
+                return ret;
+            }
             x1 = -_c / B;
         }
-        else if (D >= -std::numeric_limits<T>::epsilon())     // No real roots if D < 0
+        else
         {
-            T Q = D < 0 ? 0 : sqrt(D);
-            T R = _b + (_b < 0 ? -Q : Q);
+            // a, b, c are expected to be the coefficients of the equation:
+            // Ax² - 2Bx + C == 0, so we take b = -B/2:
+            _b *= -0.5;
+            D = _b * _b - _a * _c; // Discriminant
 
-            // Try to minimize floating point noise.
-            if (R == 0)
+            // If the discriminant is very small, we can try to pre-condition
+            // the coefficients, so that we may get better accuracy
+            if (D != 0 && abs(D) < std::numeric_limits<T>::epsilon())
             {
-                x1 = _c / _a;
-                x2 = -x1;
+                // If the geometric mean of the coefficients is small enough
+                T gmC = pow(abs(_a * _b * _c), 1.0 / 3.0);
+                if (gmC < 1e-8)
+                {
+                    // We multiply with a factor to normalize the coefficients.
+                    // The factor is just the nearest exponent of 10, big enough
+                    // to raise all the coefficients to nearly [-1, +1] range.
+                    T mult = pow(10, abs(floor(log(gmC) * 0.4342944819032518))); //number is LOG10E
+                    if (!std::isfinite(mult))
+                        mult = 0;
+                    _a *= mult;
+                    _b *= mult;
+                    _c *= mult;
+                    // Recalculate the discriminant
+                    D = _b * _b - _a * _c;
+                }
             }
-            else
+
+            if (D >= -std::numeric_limits<T>::epsilon())     // No real roots if D < 0
             {
-                x1 = R / _a;
-                x2 = _c / R;
+                T Q = D < 0 ? 0 : sqrt(D);
+                T R = _b + (_b < 0 ? -Q : Q);
+
+                // Try to minimize floating point noise.
+                if (R == 0)
+                {
+                    x1 = _c / _a;
+                    x2 = -x1;
+                }
+                else
+                {
+                    x1 = R / _a;
+                    x2 = _c / R;
+                }
             }
         }
 
         // We need to include EPSILON in the comparisons with min / max,
         // as some solutions are ever so lightly out of bounds.
+        QuadraticResult<T> ret;
+        ret.count = 0;
         if (std::isfinite(x1) && (x1 > eMin && x1 < eMax))
-            _outRoots.append(clamp(x1, _min, _max));
+            ret.values[ret.count++] = clamp(x1, _min, _max);
         if (x2 != x1 && std::isfinite(x2) && (x2 > eMin && x2 < eMax))
-            _outRoots.append(clamp(x2, _min, _max));
-        return _outRoots.count();
+            ret.values[ret.count++] = clamp(x2, _min, _max);
+        return ret;
     }
+
+    template<class T>
+    struct CubicResult
+    {
+        T values[3];
+        stick::Int32 count;
+    };
 
     /**
     * Solve a cubic equation, using numerically stable methods,
@@ -221,14 +205,11 @@ namespace crunch
     * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
     */
     template<class T>
-    stick::Int32 solveCubic(T _a, T _b, T _c, T _d,
-                            stick::DynamicArray<T> & _outRoots,
-                            T _min = 0,
-                            T _max = 1)
+    CubicResult<T> solveCubic(T _a, T _b, T _c, T _d,
+                              T _min = 0,
+                              T _max = 1)
     {
         static T s_epsilon = std::numeric_limits<T>::epsilon();
-
-        stick::Int32 count;
         T x, b1, c2;
 
         // If a or d is zero, we only need to solve a quadratic, so we set
@@ -298,15 +279,14 @@ namespace crunch
         }
 
         // The cubic has been deflated to a quadratic.
-        count = solveQuadratic(_a, b1, c2, _outRoots, _min, _max);
-        if (std::isfinite(x) && (count == 0 || x != _outRoots[count - 1])
+        auto res = solveQuadratic(_a, b1, c2, _min, _max);
+        if (std::isfinite(x) && (res.count == 0 || x != res.values[res.count - 1])
                 && (x > _min - s_epsilon && x < _max + s_epsilon))
         {
-            _outRoots.append(clamp(x, _min, _max));
-            count++;
+            return {{res.values[0], res.values[1], clamp(x, _min, _max)}, res.count};
         }
 
-        return count;
+        return {{res.values[0], res.values[1], 0}, res.count};
     }
 }
 

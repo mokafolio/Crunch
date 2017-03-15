@@ -195,7 +195,25 @@ namespace crunch
          * See:
          * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
          */
-        void peaks(stick::DynamicArray<ValueType> & _peaks) const;
+
+        struct PeaksResult
+        {
+            ValueType values[3];
+            stick::Int32 count;
+        };
+
+        PeaksResult peaks() const;
+
+
+        struct ExtremaResult
+        {
+            ValueType values[4];
+            stick::Int32 count;
+        };
+
+        ExtremaResult extrema2D() const;
+
+        static void extrema(ValueType _a, ValueType _b, ValueType _c, ExtremaResult & _outResult);
 
         /**
          * @brief Calculates the length of the curve between two parameters.
@@ -274,7 +292,7 @@ namespace crunch
 
         bool isStraight() const;
 
-        stick::Int32 solveCubic(ValueType _val, stick::DynamicArray<ValueType> & _outRoots, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
+        CubicResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
 
 
     private:
@@ -303,6 +321,8 @@ namespace crunch
         VectorType m_handleTwo;
     };
 
+
+    //@TODO: This tolerance should most likely be based on T
     template<class T>
     const typename BezierCubic<T>::ValueType BezierCubic<T>::s_tolerance = 10e-6;
 
@@ -487,18 +507,14 @@ namespace crunch
         }
 
         template<class T, class BT>
-        void setMinMaxForRoots(const stick::DynamicArray<T> & _roots, T _tMin, T _tMax, T _padding, T & _inOutMin, T & _inOutMax, const BT & _bezier, bool _bX)
+        void setMinMaxForRoots(const QuadraticResult<T> & _roots, T _tMin, T _tMax, T _padding, T & _inOutMin, T & _inOutMax, const BT & _bezier, bool _bX)
         {
-            T t;
-            auto it = _roots.begin();
-            for (; it != _roots.end(); ++it)
+            for (stick::Int32 i = 0; i < _roots.count; ++i)
             {
-                t = *it;
-
                 // Test for good roots and only add to bounds if good.
-                if (_tMin < t && t < _tMax)
+                if (_tMin < _roots.values[i] && _roots.values[i] < _tMax)
                 {
-                    setMinMax(_bX ? _bezier.positionAt(t).x : _bezier.positionAt(t).y, _padding, _inOutMin, _inOutMax);
+                    setMinMax(_bX ? _bezier.positionAt(_roots.values[i]).x : _bezier.positionAt(_roots.values[i]).y, _padding, _inOutMin, _inOutMax);
                 }
             }
         }
@@ -515,17 +531,15 @@ namespace crunch
         // Doing so allows for simpler calculations of a, b, c and leads to the
         // same quadratic roots.
 
-        //TODO: Move derivate coefficient generation in seperate functions
+        //@TODO: Move derivate coefficient generation in seperate functions
+        //@TODO: Does that still make sense? Moka, 03/15/17
         VectorType a = (m_handleOne - m_handleTwo) * 3.0 - m_pointOne + m_pointTwo;
         VectorType b = (m_pointOne + m_handleTwo) * 2.0 - m_handleOne * 4.0;
         VectorType c = m_handleOne - m_pointOne;
 
-        //find quadratic roots for both axis
-        stick::DynamicArray<ValueType> xRoots;
-        solveQuadratic(a.x, b.x, c.x, xRoots);
-
-        stick::DynamicArray<ValueType> yRoots;
-        solveQuadratic(a.y, b.y, c.y, yRoots);
+        //find quadratic roots for both axis (2d extrema)
+        auto xRoots = solveQuadratic(a.x, b.x, c.x);
+        auto yRoots = solveQuadratic(a.y, b.y, c.y);
 
         //ignore the padding for points not in 0 < t < 1
         ValueType tMin = s_tolerance;
@@ -543,7 +557,7 @@ namespace crunch
     }
 
     template<class T>
-    void BezierCubic<T>::peaks(stick::DynamicArray<ValueType> & _peaks) const
+    typename BezierCubic<T>::PeaksResult BezierCubic<T>::peaks() const
     {
         ValueType ax = -m_pointOne.x + 3 * m_handleOne.x - 3 * m_handleTwo.x + m_pointTwo.x;
         ValueType bx = 3 * m_pointOne.x - 6 * m_handleOne.x + 3 * m_handleTwo.x;
@@ -553,16 +567,55 @@ namespace crunch
         ValueType cy = -3 * m_pointOne.y + 3 * m_handleOne.y;
 
         //@TODO: Double check if these epsilon values make sense (most likely need adjustment)
-        ValueType tMin = std::numeric_limits<ValueType>::epsilon();
-        ValueType tMax = 1.0 - tMin;
-        crunch::solveCubic(9 * (ax * ax + ay * ay),
-                           9 * (ax * bx + by * ay),
-                           2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
-                           (cx * bx + by * cy),
-                           // Exclude 0 and 1 as we don't count them as peaks.
-                           _peaks, tMin, tMax);
-        
-        std::sort(_peaks.begin(), _peaks.end());
+        ValueType tMin = s_tolerance;
+        ValueType tMax = 1.0 - s_tolerance;
+        auto res = crunch::solveCubic(9 * (ax * ax + ay * ay),
+                                      9 * (ax * bx + by * ay),
+                                      2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+                                      (cx * bx + by * cy),
+                                      // Exclude 0 and 1 as we don't count them as peaks.
+                                      tMin, tMax);
+
+        //@TODO: Should we sort here at all? I think either both, extrema2D and this should
+        //be sorted or not.
+        std::sort(&res.values[0], &res.values[0] + res.count);
+
+        PeaksResult ret;
+        ret.count = res.count;
+        for (stick::Int32 i = 0; i < res.count; ++i)
+            ret.values[i] = res.values[i];
+        return ret;
+    }
+
+    template<class T>
+    typename BezierCubic<T>::ExtremaResult BezierCubic<T>::extrema2D() const
+    {
+        // From paper.js Curve.js:
+        // Calculate derivative of our bezier polynomial, divided by 3.
+        // Doing so allows for simpler calculations of a, b, c and leads to the
+        // same quadratic roots.
+
+        //@TODO: Move derivate coefficient generation in seperate functions
+        //@TODO: Does that still make sense? Moka, 03/15/17
+        VectorType a = (m_handleOne - m_handleTwo) * 3.0 - m_pointOne + m_pointTwo;
+        VectorType b = (m_pointOne + m_handleTwo) * 2.0 - m_handleOne * 4.0;
+        VectorType c = m_handleOne - m_pointOne;
+
+        //find quadratic roots for both axis
+        ExtremaResult res;
+        res.count = 0;
+        extrema(a.x, b.x, c.y, res);
+        extrema(a.y, b.y, b.y, res);
+
+        return res;
+    }
+
+    template<class T>
+    void BezierCubic<T>::extrema(ValueType _a, ValueType _b, ValueType _c, ExtremaResult & _outResult)
+    {
+        auto res = solveQuadratic(_a, _b, _c);
+        for (stick::Int32 i = 0; i < res.count; ++i)
+            _outResult.values[_outResult.count++] = res.values[i];
     }
 
     template<class T>
@@ -927,7 +980,7 @@ namespace crunch
     }
 
     template<class T>
-    stick::Int32 BezierCubic<T>::solveCubic(ValueType _val, stick::DynamicArray<ValueType> & _outRoots, bool _bHorizontal, ValueType _min, ValueType _max) const
+    CubicResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::solveCubic(ValueType _val, bool _bHorizontal, ValueType _min, ValueType _max) const
     {
         ValueType a, b, c, p1;
         if (_bHorizontal)
@@ -945,7 +998,7 @@ namespace crunch
             p1 = m_pointOne.y;
         }
 
-        return crunch::solveCubic(a, b, c, p1 - _val, _outRoots, _min, _max);
+        return crunch::solveCubic(a, b, c, p1 - _val, _min, _max);
     }
 
     typedef BezierCubic<Vector2<stick::Float32> > BezierCubic2f;
