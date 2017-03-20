@@ -76,18 +76,23 @@ namespace crunch
     }
 
     template<class T>
-    struct QuadraticResult
+    struct SolveResult
     {
-        T values[2];
-        stick::Int32 count;
+        inline void append(T _value)
+        {
+            values[count++] = _value;
+        }
+
+        T values[3];
+        stick::Int32 count = 0;
     };
 
     template<class T>
-    QuadraticResult<T> solveQuadratic(T _a,
-                                      T _b,
-                                      T _c,
-                                      T _min = 0,
-                                      T _max = 1)
+    SolveResult<T> solveQuadratic(T _a,
+                                  T _b,
+                                  T _c,
+                                  T _min = 0,
+                                  T _max = 1)
     {
         //@TODO: These epsilons most likely need adjustment!
         T eMin = _min - std::numeric_limits<T>::epsilon();
@@ -96,14 +101,16 @@ namespace crunch
         x1 = x2 = std::numeric_limits<T>::infinity();
         T B = _b;
         T D;
+
+
         if (abs(_a) < std::numeric_limits<T>::epsilon())
         {
             // This could just be a linear equation
             if (abs(B) < std::numeric_limits<T>::epsilon())
             {
-                QuadraticResult<T> ret;
+                SolveResult<T> ret;
                 ret.count = 0;
-                if(abs(_c) < std::numeric_limits<T>::epsilon())
+                if (abs(_c) < std::numeric_limits<T>::epsilon())
                     ret.count = -1;
                 return ret;
             }
@@ -138,7 +145,7 @@ namespace crunch
                 }
             }
 
-            if (D >= -std::numeric_limits<T>::epsilon())     // No real roots if D < 0
+            if (D >= -std::numeric_limits<T>::epsilon())    // No real roots if D < 0
             {
                 T Q = D < 0 ? 0 : sqrt(D);
                 T R = _b + (_b < 0 ? -Q : Q);
@@ -159,21 +166,14 @@ namespace crunch
 
         // We need to include EPSILON in the comparisons with min / max,
         // as some solutions are ever so lightly out of bounds.
-        QuadraticResult<T> ret;
-        ret.count = 0;
+        SolveResult<T> ret;
         if (std::isfinite(x1) && (x1 > eMin && x1 < eMax))
-            ret.values[ret.count++] = clamp(x1, _min, _max);
+            ret.append(clamp(x1, _min, _max));
         if (x2 != x1 && std::isfinite(x2) && (x2 > eMin && x2 < eMax))
-            ret.values[ret.count++] = clamp(x2, _min, _max);
+            ret.append(clamp(x2, _min, _max));
+
         return ret;
     }
-
-    template<class T>
-    struct CubicResult
-    {
-        T values[3];
-        stick::Int32 count;
-    };
 
     /**
     * Solve a cubic equation, using numerically stable methods,
@@ -205,7 +205,7 @@ namespace crunch
     * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
     */
     template<class T>
-    CubicResult<T> solveCubic(T _a, T _b, T _c, T _d,
+    SolveResult<T> solveCubic(T _a, T _b, T _c, T _d,
                               T _min = 0,
                               T _max = 1)
     {
@@ -279,14 +279,14 @@ namespace crunch
         }
 
         // The cubic has been deflated to a quadratic.
-        auto res = solveQuadratic(_a, b1, c2, _min, _max);
-        if (std::isfinite(x) && (res.count == 0 || x != res.values[res.count - 1])
+        auto ret = solveQuadratic(_a, b1, c2, _min, _max);
+        if (std::isfinite(x) && (ret.count == 0 || x != ret.values[ret.count - 1])
                 && (x > _min - s_epsilon && x < _max + s_epsilon))
         {
-            return {{res.values[0], res.values[1], clamp(x, _min, _max)}, 3};
+            ret.append(clamp(x, _min, _max));
         }
 
-        return {{res.values[0], res.values[1], 0}, res.count};
+        return ret;
     }
 }
 

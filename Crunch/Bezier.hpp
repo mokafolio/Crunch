@@ -292,7 +292,7 @@ namespace crunch
 
         bool isStraight() const;
 
-        CubicResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
+        SolveResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
 
 
     private:
@@ -507,7 +507,7 @@ namespace crunch
         }
 
         template<class T, class BT>
-        void setMinMaxForRoots(const QuadraticResult<T> & _roots, T _tMin, T _tMax, T _padding, T & _inOutMin, T & _inOutMax, const BT & _bezier, bool _bX)
+        void setMinMaxForRoots(const SolveResult<T> & _roots, T _tMin, T _tMax, T _padding, T & _inOutMin, T & _inOutMax, const BT & _bezier, bool _bX)
         {
             for (stick::Int32 i = 0; i < _roots.count; ++i)
             {
@@ -980,7 +980,7 @@ namespace crunch
     }
 
     template<class T>
-    CubicResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::solveCubic(ValueType _val, bool _bHorizontal, ValueType _min, ValueType _max) const
+    SolveResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::solveCubic(ValueType _val, bool _bHorizontal, ValueType _min, ValueType _max) const
     {
         ValueType a, b, c, p1;
         if (_bHorizontal)
@@ -999,6 +999,18 @@ namespace crunch
         }
 
         return crunch::solveCubic(a, b, c, p1 - _val, _min, _max);
+
+        // stick::DynamicArray<ValueType> roots;
+        // crunch::solveCubicOld(a, b, c, p1 - _val, roots, _min, _max);
+
+        // if (roots.count() == 0)
+        //     return {{0, 0, 0}, 0};
+        // else if (roots.count() == 1)
+        //     return {{roots[0], 0, 0}, 1};
+        // else if (roots.count() == 2)
+        //     return {{roots[0], roots[1], 0}, 2};
+        // else if (roots.count() == 3)
+        //     return {{roots[0], roots[1], roots[2]}, 3};
     }
 
     typedef BezierCubic<Vector2<stick::Float32> > BezierCubic2f;
