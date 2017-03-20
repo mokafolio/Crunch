@@ -283,7 +283,7 @@ namespace crunch
         if (std::isfinite(x) && (res.count == 0 || x != res.values[res.count - 1])
                 && (x > _min - s_epsilon && x < _max + s_epsilon))
         {
-            return {{res.values[0], res.values[1], clamp(x, _min, _max)}, res.count};
+            return {{res.values[0], res.values[1], clamp(x, _min, _max)}, 3};
         }
 
         return {{res.values[0], res.values[1], 0}, res.count};
