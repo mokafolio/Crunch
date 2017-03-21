@@ -78,6 +78,16 @@ namespace crunch
     template<class T>
     struct SolveResult
     {
+        SolveResult() = default;
+        SolveResult(const SolveResult &) = default;
+        SolveResult(SolveResult &&) = default;
+
+        SolveResult(std::initializer_list<T> _items)
+        {
+            for(auto & _item : _items)
+                append(_item);
+        }
+
         inline void append(T _value)
         {
             values[count++] = _value;

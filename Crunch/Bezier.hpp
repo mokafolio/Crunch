@@ -13,7 +13,7 @@ namespace crunch
     /**
      * @brief For classifying curves.
      */
-    enum class BezierType
+    enum class CurveType
     {
         Line,
         Quadratic,
@@ -26,7 +26,7 @@ namespace crunch
     template<class T>
     struct ClassificationResult
     {
-        BezierType type;
+        CurveType type;
         SolveResult<T> roots;
     };
 
@@ -315,7 +315,7 @@ namespace crunch
         SolveResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
 
 
-        ClassificationResult<T> classify() const;
+        ClassificationResult<ValueType> classify() const;
 
     private:
 
@@ -1023,8 +1023,52 @@ namespace crunch
         return crunch::solveCubic(a, b, c, p1 - _val, _min, _max);
     }
 
+    namespace detail
+    {
+        template<class T>
+        inline ClassificationResult<T> classificationHelperImpl(CurveType _type, T * _rootA, T * _rootB)
+        {
+            bool bHasRoots = _rootA != nullptr;
+            bool t1Ok = _rootA && *_rootA > 0 && *_rootA < 1;
+            bool t2Ok = _rootB && *_rootB > 0 && *_rootB < 1;
+
+            // Degrade to arch for serpentine, cusp or loop if no solutions
+            // within 0..1 are found. loop requires 2 solutions to be valid.
+            if (bHasRoots && (!(t1Ok || t2Ok) || (_type == CurveType::Loop && !(t1Ok && t2Ok))))
+            {
+                _type = CurveType::Arch;
+                t1Ok = t2Ok = false;
+            }
+            SolveResult<T> roots;
+            if(t1Ok)
+                roots.append(*_rootA);
+            if(t2Ok)
+                roots.append(*_rootB);
+            std::sort(&roots.values[0], &roots.values[0] + roots.count);
+            return {_type, roots};
+        }
+
+        template<class T>
+        inline ClassificationResult<T> classificationHelper(CurveType _type, T _rootA, T _rootB)
+        {
+            return classificationHelperImpl<T>(_type, &_rootA, &_rootB);
+        }
+
+        template<class T>
+        inline ClassificationResult<T> classificationHelper(CurveType _type, T _rootA)
+        {
+            return classificationHelperImpl<T>(_type, &_rootA, nullptr);
+        }
+
+        template<class T>
+        inline ClassificationResult<T> classificationHelper(CurveType _type)
+        {
+            return classificationHelperImpl<T>(_type, nullptr, nullptr);
+        }
+    }
+
     template<class T>
-    ClassificationResult<T> BezierCubic<T>::classify() const
+    ClassificationResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::classify() const
     {
         // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
         // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
@@ -1043,13 +1087,6 @@ namespace crunch
 
         // Calculate coefficients of I(s, t), of which the roots are
         // inflection points.
-        // ValueType a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2;
-        // ValueType a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3;
-        // ValueType a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0;
-        // ValueType d3 = 3 * a3;
-        // ValueType d2 = d3 - a2;
-        // ValueType d1 = d2 - a2 + a1;
-
         ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
         ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
         ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
@@ -1065,42 +1102,40 @@ namespace crunch
         d2 *= s;
         d3 *= s;
 
-        if (isClose(d1, 0))
+        if (isClose(d1, (ValueType)0.0))
         {
-            // return isClose(d2, 0) ? type(isClose(d3, 0) ? 'line' : 'quadratic') // 5. / 4.
-            // : type(serpentine, d3 / (3 * d2)); // 3b.
-            if (isClose(d2, 0))
+            if (isClose(d2, (ValueType)0.0))
             {
-                if (isClose(d3, 0))
+                if (isClose(d3, (ValueType)0.0))
                 {
-                    return {BezierType::Line, {}}; // 5.
+                    return detail::classificationHelper<ValueType>(CurveType::Line); // 5.
                 }
                 else
                 {
-                    return {BezierType::Quadratic, {}}; // 4.
+                    return detail::classificationHelper<ValueType>(CurveType::Quadratic); // 4.
                 }
             }
             else
             {
-                return {BezierType::Serpentine, {d3 / (3 * d2)}}; // 3b.
+                return detail::classificationHelper<ValueType>(CurveType::Serpentine, d3 / (3 * d2)); // 3b.
             }
         }
 
         ValueType d = 3 * d2 * d2 - 4 * d1 * d3;
-        if (isClose(d, 0))
+        if (isClose(d, (ValueType)0.0))
         {
-            return {BezierType::Cusp, {d2 / (2 * d1)}}; // 3a.
+            return detail::classificationHelper<ValueType>(CurveType::Cusp, d2 / (2 * d1)); // 3a.
         }
 
         ValueType f1 = d > 0 ? std::sqrt(d / 3) : std::sqrt(-d);
         ValueType f2 = 2 * d1;
-        if(d > 0)
+        if (d > 0)
         {
-            return {BezierType::Serpentine, {(d2 + f1) / f2, (d2 - f1) / f2}}; // 1.
+            return detail::classificationHelper<ValueType>(CurveType::Serpentine, (d2 + f1) / f2, (d2 - f1) / f2); // 1.
         }
         else
         {
-            return {BezierType::Loop, {(d2 + f1) / f2, (d2 - f1) / f2}}; // 2.
+            return detail::classificationHelper<ValueType>(CurveType::Loop, (d2 + f1) / f2, (d2 - f1) / f2); // 2.
         }
     }
 

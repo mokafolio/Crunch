@@ -96,7 +96,7 @@ const Suite spec[] =
         packer2.reset(1000, 1000);
 
         Randomizer rand;
-        for(int i=0; i<10; ++i)
+        for (int i = 0; i < 10; ++i)
             EXPECT(packer2.placeRectangle(Rectangle<Float32>(0, 0, rand.randomf(2, 10), rand.randomf(2, 10))));
     },
     SUITE("Line Tests")
@@ -159,6 +159,50 @@ const Suite spec[] =
         //this is on the extended line (but not between the two provided points)
         auto sideD = line.side(Vec2f(500, 0));
         EXPECT(sideD == 1);
+    },
+    SUITE("Bezier Tests")
+    {
+        BezierCubic2f point(Vec2f(100, 100), Vec2f(100, 100), Vec2f(100, 100), Vec2f(100, 100));
+        BezierCubic2f line(Vec2f(100, 100), Vec2f(100, 100), Vec2f(200, 200), Vec2f(200, 200));
+        BezierCubic2f cusp(Vec2f(100, 200), Vec2f(200, 100), Vec2f(100, 100), Vec2f(200, 200));
+        BezierCubic2f loop(Vec2f(100, 200), Vec2f(250, 100), Vec2f(50, 100), Vec2f(200, 200));
+        BezierCubic2f single(Vec2f(100, 100), Vec2f(150, 100), Vec2f(173, 154), Vec2f(200, 200));
+        BezierCubic2f doublee(Vec2f(100, 200), Vec2f(200, 100), Vec2f(160, 120), Vec2f(200, 200));
+        BezierCubic2f arch(Vec2f(100, 100), Vec2f(150, 100), Vec2f(200, 150), Vec2f(200, 200));
+
+        auto a = point.classify();
+        EXPECT(a.type == CurveType::Line);
+        EXPECT(a.roots.count == 0);
+
+        auto b = line.classify();
+        EXPECT(b.type == CurveType::Line);
+        EXPECT(b.roots.count == 0);
+
+        auto c = cusp.classify();
+        EXPECT(c.type == CurveType::Cusp);
+        EXPECT(c.roots.count == 1);
+        EXPECT(isClose(c.roots.values[0], 0.5f));
+
+        auto d = loop.classify();
+        EXPECT(d.type == CurveType::Loop);
+        EXPECT(d.roots.count == 2);
+        EXPECT(isClose(d.roots.values[0], 0.17267316464601132f));
+        EXPECT(isClose(d.roots.values[1], 0.8273268353539888f));
+
+        auto e = single.classify();
+        EXPECT(e.type == CurveType::Serpentine);
+        EXPECT(e.roots.count == 1);
+        EXPECT(isClose(e.roots.values[0], 0.870967741935484f));
+
+        auto f = doublee.classify();
+        EXPECT(f.type == CurveType::Serpentine);
+        EXPECT(f.roots.count == 2);
+        EXPECT(isClose(f.roots.values[0], 0.15047207654837885f));
+        EXPECT(isClose(f.roots.values[1], 0.7384168123405099f));
+
+        auto g = arch.classify();
+        EXPECT(g.type == CurveType::Arch);
+        EXPECT(g.roots.count == 0);
     }
 };
 
