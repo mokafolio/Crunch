@@ -11,6 +11,26 @@
 namespace crunch
 {
     /**
+     * @brief For classifying curves.
+     */
+    enum class BezierType
+    {
+        Line,
+        Quadratic,
+        Serpentine,
+        Cusp,
+        Loop,
+        Arch
+    };
+
+    template<class T>
+    struct ClassificationResult
+    {
+        BezierType type;
+        SolveResult<T> roots;
+    };
+
+    /**
      * @brief A cubic bezier curve consisting of two points and two handles.
      *
      * http://en.wikipedia.org/wiki/B%C3%A9zier_curve
@@ -294,6 +314,8 @@ namespace crunch
 
         SolveResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
 
+
+        ClassificationResult<T> classify() const;
 
     private:
 
@@ -999,18 +1021,87 @@ namespace crunch
         }
 
         return crunch::solveCubic(a, b, c, p1 - _val, _min, _max);
+    }
 
-        // stick::DynamicArray<ValueType> roots;
-        // crunch::solveCubicOld(a, b, c, p1 - _val, roots, _min, _max);
+    template<class T>
+    ClassificationResult<T> BezierCubic<T>::classify() const
+    {
+        // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
+        // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
+        //
+        // Possible types:
+        //   'line'       (d1 == d2 == d3 == 0)
+        //   'quadratic'  (d1 == d2 == 0)
+        //   'serpentine' (d > 0)
+        //   'cusp'       (d == 0)
+        //   'loop'       (d < 0)
+        //   'arch'       (serpentine, cusp or loop with roots outside 0..1)
+        //
+        // NOTE: Roots for serpentine, cusp and loop curves are only
+        // considered if they are within 0..1. If the roots are outside,
+        // then we degrade the type of curve down to an 'arch'.
 
-        // if (roots.count() == 0)
-        //     return {{0, 0, 0}, 0};
-        // else if (roots.count() == 1)
-        //     return {{roots[0], 0, 0}, 1};
-        // else if (roots.count() == 2)
-        //     return {{roots[0], roots[1], 0}, 2};
-        // else if (roots.count() == 3)
-        //     return {{roots[0], roots[1], roots[2]}, 3};
+        // Calculate coefficients of I(s, t), of which the roots are
+        // inflection points.
+        // ValueType a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2;
+        // ValueType a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3;
+        // ValueType a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0;
+        // ValueType d3 = 3 * a3;
+        // ValueType d2 = d3 - a2;
+        // ValueType d1 = d2 - a2 + a1;
+
+        ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
+        ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
+        ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
+        ValueType d3 = 3 * a3;
+        ValueType d2 = d3 - a2;
+        ValueType d1 = d2 - a2 + a1;
+
+        // Normalize the vector (d1, d2, d3) to keep error consistent.
+        ValueType l = std::sqrt(d1 * d1 + d2 * d2 + d3 * d3);
+        ValueType s = l != 0 ? 1 / l : 0;
+
+        d1 *= s;
+        d2 *= s;
+        d3 *= s;
+
+        if (isClose(d1, 0))
+        {
+            // return isClose(d2, 0) ? type(isClose(d3, 0) ? 'line' : 'quadratic') // 5. / 4.
+            // : type(serpentine, d3 / (3 * d2)); // 3b.
+            if (isClose(d2, 0))
+            {
+                if (isClose(d3, 0))
+                {
+                    return {BezierType::Line, {}}; // 5.
+                }
+                else
+                {
+                    return {BezierType::Quadratic, {}}; // 4.
+                }
+            }
+            else
+            {
+                return {BezierType::Serpentine, {d3 / (3 * d2)}}; // 3b.
+            }
+        }
+
+        ValueType d = 3 * d2 * d2 - 4 * d1 * d3;
+        if (isClose(d, 0))
+        {
+            return {BezierType::Cusp, {d2 / (2 * d1)}}; // 3a.
+        }
+
+        ValueType f1 = d > 0 ? std::sqrt(d / 3) : std::sqrt(-d);
+        ValueType f2 = 2 * d1;
+        if(d > 0)
+        {
+            return {BezierType::Serpentine, {(d2 + f1) / f2, (d2 - f1) / f2}}; // 1.
+        }
+        else
+        {
+            return {BezierType::Loop, {(d2 + f1) / f2, (d2 - f1) / f2}}; // 2.
+        }
     }
 
     typedef BezierCubic<Vector2<stick::Float32> > BezierCubic2f;
