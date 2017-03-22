@@ -2,6 +2,7 @@
 #define CRUNCH_BEZIER_HPP
 
 #include <Stick/DynamicArray.hpp>
+#include <Crunch/Line.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/CommonFunc.hpp>
 #include <Crunch/UtilityFunc.hpp>
@@ -185,6 +186,8 @@ namespace crunch
          */
         VectorType closestPoint(const VectorType & _point, ValueType & _distance, ValueType _startT = 0.0, ValueType _endT = 1.0, ValueType _targetDistance = 0.0) const;
 
+        ValueType parameterOf(const VectorType & _point) const;
+
         /**
          * @brief Calculates the length of the curve.
          */
@@ -314,8 +317,14 @@ namespace crunch
 
         SolveResult<ValueType> solveCubic(ValueType _val, bool _bHorizontal, ValueType _min = 0, ValueType _max = 1) const;
 
-
         ClassificationResult<ValueType> classify() const;
+
+        struct OverlapsResult
+        {
+            ValueType values[4];
+        };
+
+        OverlapsResult overlaps(const BezierCubic & _other) const;
 
     private:
 
@@ -705,6 +714,31 @@ namespace crunch
     }
 
     template<class T>
+    typename BezierCubic<T>::ValueType BezierCubic<T>::parameterOf(const VectorType & _point) const
+    {
+        //@TODO: Put these into one place (i.e. static constexpr members of the class based on T)
+        ValueType epsilon = std::numeric_limits<ValueType>::epsilon();
+        ValueType geomEpsilon = 1e-7;
+
+        // Before solving cubics, compare the beginning and end of the curve
+        // with zero epsilon:
+        if(!isClose(m_pointOne, _point) && !isClose(m_pointTwo, _point))
+        {
+
+        }
+        else if(isClose(m_pointOne, _point, geomEpsilon))
+        {
+            return 0;
+        }
+        else if(isClose(m_pointTwo, _point, geomEpsilon))
+        {
+            return 1;
+        }
+
+        return -1;
+    }
+
+    template<class T>
     typename BezierCubic<T>::ValueType BezierCubic<T>::length() const
     {
         auto ret = lengthBetween(0, 1);
@@ -1040,9 +1074,9 @@ namespace crunch
                 t1Ok = t2Ok = false;
             }
             SolveResult<T> roots;
-            if(t1Ok)
+            if (t1Ok)
                 roots.append(*_rootA);
-            if(t2Ok)
+            if (t2Ok)
                 roots.append(*_rootB);
             std::sort(&roots.values[0], &roots.values[0] + roots.count);
             return {_type, roots};
@@ -1136,6 +1170,66 @@ namespace crunch
         else
         {
             return detail::classificationHelper<ValueType>(CurveType::Loop, (d2 + f1) / f2, (d2 - f1) / f2); // 2.
+        }
+    }
+
+    template<class T>
+    typename BezierCubic<T>::OverlapsResult BezierCubic<T>::overlaps(const BezierCubic & _other) const
+    {
+        // Linear curves can only overlap if they are collinear. Instead of
+        // using the #isCollinear() check, we pick the longer of the two curves
+        // treated as lines, and see how far the starting and end points of the
+        // other line are from this line (assumed as an infinite line). But even
+        // if the curves are not straight, they might just have tiny handles
+        // within geometric epsilon distance, so we have to check for that too.
+
+        //@TODO: Put all epsilons needed by this class into constexpr statics
+        //@TODO2: Also, make them based on T!
+        ValueType geomEpsilon = 1e-7;
+
+        bool bStraight1 = isStraight();
+        bool bStraight2 = _other.isStraight();
+        bool bStraightBoth = bStraight1 && bStraight2;
+        bool bFlip = lengthSquared(m_pointTwo - m_pointOne) < lengthSquared(_other.m_pointTwo - _other.m_pointOne);
+
+        const BezierCubic & l1 =  bFlip ? _other : *this;
+        const BezierCubic & l2 =  bFlip ? *this : _other;
+
+        // Get l1 start and end point values for faster referencing.
+        ValueType px = l1.m_pointOne.x;
+        ValueType py = l1.m_pointOne.y;
+        ValueType vx = l1.m_pointTwo.x - px;
+        ValueType vy = l1.m_pointTwo.y - py;
+        Line<VectorType> line(VectorType(px, py), VectorType(vx, vy));
+
+        // See if the starting and end point of curve two are very close to the
+        // picked line. Note that the curve for the picked line might not
+        // actually be a line, so we have to perform more checks after.
+        if (line.distance(l2.m_pointOne) < geomEpsilon &&
+                line.distance(l2.m_pointTwo) < geomEpsilon)
+        {
+            // If not both curves are straight, check against both of their
+            // handles, and treat them as straight if they are very close.
+            if (!bStraightBoth &&
+                    line.distance(l1.m_handleOne) < geomEpsilon &&
+                    line.distance(l1.m_handleTwo) < geomEpsilon &&
+                    line.distance(l2.m_handleOne) < geomEpsilon &&
+                    line.distance(l2.m_handleTwo) < geomEpsilon)
+            {
+                bStraight1 = bStraight2 = bStraightBoth = true;
+            }
+        }
+        else if (bStraightBoth)
+        {
+            // If both curves are straight and not very close to each other,
+            // there can't be a solution.
+            return OverlapsResult();
+        }
+
+        if (bStraight1 ^ bStraight2) {
+            // If one curve is straight, the other curve must be straight too,
+            // otherwise they cannot overlap.
+            return OverlapsResult();
         }
     }
 

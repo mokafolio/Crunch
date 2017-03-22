@@ -69,6 +69,9 @@ namespace crunch
          */
         stick::Int32 side(const VectorType & _point) const;
 
+        //@TODO: Make this a free function and put it into Geometric Func?
+        ValueType signedDistance(const VectorType & _point) const;
+        ValueType distance(const VectorType & _point) const;
 
         static Line fromPoints(const VectorType & _a, const VectorType & _b);
 
@@ -141,6 +144,42 @@ namespace crunch
     }
 
     template<class T>
+    typename Line<T>::ValueType Line<T>::signedDistance(const VectorType & _point) const
+    {
+        if (m_direction.x == 0)
+        {
+            if (m_direction.y > 0)
+            {
+                return _point.x - m_position.x;
+            }
+            else
+            {
+                return m_position.x - _point.x;
+            }
+        }
+        else if (m_direction.y == 0)
+        {
+            if (m_direction.x < 0)
+            {
+                return _point.y - m_position.y;
+            }
+            else
+            {
+                return m_position.y - _point.y;
+            }
+        }
+
+        return ((_point.x - m_position.x) * m_direction.y - (_point.y - m_position.y) * m_direction.x) /
+               std::sqrt(m_direction.x * m_direction.x + m_direction.y * m_direction.y);
+    }
+
+    template<class T>
+    typename Line<T>::ValueType Line<T>::distance(const VectorType & _point) const
+    {
+        return abs(signedDistance(_point));
+    }
+
+    template<class T>
     Line<T> Line<T>::fromPoints(const VectorType & _a, const VectorType & _b)
     {
         return Line<T>(_a, _b - _a);
@@ -170,7 +209,7 @@ namespace crunch
         T d = (dir.y * dirB.x - dir.x * dirB.y) / cross;
         //T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
         /*if(t >= 0 && t <= 1 && d >= 0 && d <= 1)*/
-        
+
         results.append(_a.position() + dirA * d);
 
         return IntersectionResult<Vector2<T> >(results);
