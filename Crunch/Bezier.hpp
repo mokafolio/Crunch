@@ -31,6 +31,34 @@ namespace crunch
         SolveResult<T> roots;
     };
 
+    namespace detail
+    {
+        template<class T>
+        struct BezierTraits;
+
+        template<>
+        struct BezierTraits<stick::Float32>
+        {
+            //@TODO: These are just good guesses right now
+            constexpr static stick::Float32 epsilon = 1e-5f;
+            constexpr static stick::Float32 machineEpsilon = std::numeric_limits<stick::Float32>::epsilon();
+            constexpr static stick::Float32 curveTimeEpsilon = 1e-4f;
+            constexpr static stick::Float32 geometricEpsilon = 1e-3f;
+            constexpr static stick::Float32 trigonometricEpsilon = 1e-4f;
+        };
+
+        template<>
+        struct BezierTraits<stick::Float64>
+        {
+            //based on the values used in paper.js
+            constexpr static stick::Float64 epsilon = 1e-12;
+            constexpr static stick::Float64 machineEpsilon = std::numeric_limits<stick::Float64>::epsilon();
+            constexpr static stick::Float64 curveTimeEpsilon = 1e-8;
+            constexpr static stick::Float64 geometricEpsilon = 1e-7;
+            constexpr static stick::Float64 trigonometricEpsilon = 1e-8;
+        };
+    }
+
     /**
      * @brief A cubic bezier curve consisting of two points and two handles.
      *
@@ -69,6 +97,12 @@ namespace crunch
             BezierCubic first;
             BezierCubic second;
         };
+
+        constexpr static ValueType epsilon = detail::BezierTraits<ValueType>::epsilon;
+        constexpr static ValueType machineEpsilon = detail::BezierTraits<ValueType>::machineEpsilon;
+        constexpr static ValueType curveTimeEpsilon = detail::BezierTraits<ValueType>::curveTimeEpsilon;
+        constexpr static ValueType geometricEpsilon = detail::BezierTraits<ValueType>::geometricEpsilon;
+        constexpr static ValueType trigonometricEpsilon = detail::BezierTraits<ValueType>::trigonometricEpsilon;
 
         /**
          * @brief Default Constructor.
@@ -718,20 +752,37 @@ namespace crunch
     {
         //@TODO: Put these into one place (i.e. static constexpr members of the class based on T)
         ValueType epsilon = std::numeric_limits<ValueType>::epsilon();
-        ValueType geomEpsilon = 1e-7;
+        ValueType geomEpsilon = 1e-6;
 
         // Before solving cubics, compare the beginning and end of the curve
         // with zero epsilon:
-        if(!isClose(m_pointOne, _point) && !isClose(m_pointTwo, _point))
+        if (!isClose(m_pointOne, _point) && !isClose(m_pointTwo, _point))
         {
+            printf("SOLVE CUBIC\n");
+            // Solve the cubic for both x- and y-coordinates and consider all
+            // solutions, testing with the larger / looser geometric epsilon.
+            auto resultHor = solveCubic(_point.x, true, (ValueType)0, (ValueType)1);
+            for (stick::Int32 i = 0; i < resultHor.count; i++)
+            {
+                if (isClose(_point, positionAt(resultHor.values[i]), geomEpsilon))
+                    return resultHor.values[i];
+            }
 
+            auto resultVert = solveCubic(_point.y, false, (ValueType)0, (ValueType)1);
+            for (stick::Int32 i = 0; i < resultVert.count; i++)
+            {
+                if (isClose(_point, positionAt(resultVert.values[i]), geomEpsilon))
+                    return resultVert.values[i];
+            }
         }
-        else if(isClose(m_pointOne, _point, geomEpsilon))
+        else if (isClose(m_pointOne, _point, geomEpsilon))
         {
+            printf("START\n");
             return 0;
         }
-        else if(isClose(m_pointTwo, _point, geomEpsilon))
+        else if (isClose(m_pointTwo, _point, geomEpsilon))
         {
+            printf("END\n");
             return 1;
         }
 
@@ -1226,7 +1277,8 @@ namespace crunch
             return OverlapsResult();
         }
 
-        if (bStraight1 ^ bStraight2) {
+        if (bStraight1 ^ bStraight2)
+        {
             // If one curve is straight, the other curve must be straight too,
             // otherwise they cannot overlap.
             return OverlapsResult();

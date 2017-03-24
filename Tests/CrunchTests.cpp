@@ -160,7 +160,7 @@ const Suite spec[] =
         auto sideD = line.side(Vec2f(500, 0));
         EXPECT(sideD == 1);
     },
-    SUITE("Bezier Tests")
+    SUITE("Bezier Classification Tests")
     {
         BezierCubic2f point(Vec2f(100, 100), Vec2f(100, 100), Vec2f(100, 100), Vec2f(100, 100));
         BezierCubic2f line(Vec2f(100, 100), Vec2f(100, 100), Vec2f(200, 200), Vec2f(200, 200));
@@ -203,6 +203,21 @@ const Suite spec[] =
         auto g = arch.classify();
         EXPECT(g.type == CurveType::Arch);
         EXPECT(g.roots.count == 0);
+    },
+    SUITE("Bezier::parameterOf Tests")
+    {
+        BezierCubic2f loop(Vec2f(100, 200), Vec2f(250, 100), Vec2f(50, 100), Vec2f(200, 200));
+
+        for (Float32 i = 0.0f; i <= 1.0f; i += 0.1f)
+        {
+            auto p1 = loop.positionAt(i);
+            auto param = loop.parameterOf(p1);
+            printf("PARAM %f %f\n", i, param);
+            EXPECT(isClose(param, i, 1E-6f));
+        }
+
+        auto param = loop.parameterOf(Vec2f(0, 0));
+        EXPECT(param == -1);
     }
 };
 

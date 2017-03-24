@@ -157,7 +157,7 @@ namespace crunch
 
             if (D >= -std::numeric_limits<T>::epsilon())    // No real roots if D < 0
             {
-                T Q = D < 0 ? 0 : sqrt(D);
+                T Q = D < 0 ? 0 : std::sqrt(D);
                 T R = _b + (_b < 0 ? -Q : Q);
 
                 // Try to minimize floating point noise.
@@ -260,7 +260,7 @@ namespace crunch
             s = t < 0 ? -1 : 1;
             t = -qd / _a;
             // See Kahan's notes on why 1.324718*... works.
-            r = t > 0 ? 1.3247179572 * max(r, sqrt(t)) : r;
+            r = t > 0 ? (T)1.3247179572 * max(r, std::sqrt(t)) : r;
             x0 = x - s * r;
 
             if (x0 != x)
