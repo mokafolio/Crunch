@@ -345,7 +345,7 @@ namespace crunch
          *
          * @param _epsilon An epsilon value that changes the tolerance of the internal calculation.
          */
-        bool isLinear(ValueType _epsilon = std::numeric_limits<ValueType>::epsilon()) const;
+        bool isLinear(ValueType _epsilon = geometricEpsilon) const;
 
         bool isStraight() const;
 
@@ -361,9 +361,6 @@ namespace crunch
         OverlapsResult overlaps(const BezierCubic & _other) const;
 
     private:
-
-        static const ValueType s_tolerance;
-
 
         bool refine(const VectorType & _point, ValueType & _minDist, ValueType & _minT, ValueType _t, ValueType _startT, ValueType _endT, ValueType _targetDistance) const;
 
@@ -385,11 +382,6 @@ namespace crunch
         VectorType m_handleOne;
         VectorType m_handleTwo;
     };
-
-
-    //@TODO: This tolerance should most likely be based on T
-    template<class T>
-    const typename BezierCubic<T>::ValueType BezierCubic<T>::s_tolerance = 10e-6;
 
     template<class T>
     BezierCubic<T>::BezierCubic() :
@@ -445,8 +437,8 @@ namespace crunch
     {
         // Prevent tangents and normals of length 0:
         // http://stackoverflow.com/questions/10506868/
-        if ((_t < s_tolerance && m_handleOne == m_pointOne)
-                || (_t > 1 - s_tolerance && m_handleTwo == m_pointTwo))
+        if ((_t < curveTimeEpsilon && m_handleOne == m_pointOne)
+                || (_t > 1 - curveTimeEpsilon && m_handleTwo == m_pointTwo))
         {
             return normalize(m_pointTwo - m_pointOne);
         }
@@ -607,8 +599,8 @@ namespace crunch
         auto yRoots = solveQuadratic(a.y, b.y, c.y);
 
         //ignore the padding for points not in 0 < t < 1
-        ValueType tMin = s_tolerance;
-        ValueType tMax = 1.0 - s_tolerance;
+        ValueType tMin = curveTimeEpsilon;
+        ValueType tMax = 1.0 - curveTimeEpsilon;
         min = m_pointOne;
         max = m_pointOne;
 
@@ -632,8 +624,8 @@ namespace crunch
         ValueType cy = -3 * m_pointOne.y + 3 * m_handleOne.y;
 
         //@TODO: Double check if these epsilon values make sense (most likely need adjustment)
-        ValueType tMin = s_tolerance;
-        ValueType tMax = 1.0 - s_tolerance;
+        ValueType tMin = curveTimeEpsilon;
+        ValueType tMax = 1.0 - curveTimeEpsilon;
         auto res = crunch::solveCubic(9 * (ax * ax + ay * ay),
                                       9 * (ax * bx + by * ay),
                                       2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
@@ -706,7 +698,8 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::ValueType BezierCubic<T>::closestParameter(const VectorType & _point, ValueType & _distance, ValueType _startT, ValueType _endT, ValueType _targetDistance) const
     {
-        ValueType tolerance = s_tolerance;
+        //@TODO: Update this to the current implementation in paper.js (Moka @ 03/23/2017)
+        ValueType tolerance = curveTimeEpsilon;
         stick::UInt32 sampleCount = 100;
         ValueType minDist = std::numeric_limits<ValueType>::max();
         ValueType minT = _startT;
@@ -809,6 +802,8 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::ValueType BezierCubic<T>::parameterAtOffset(ValueType _offset) const
     {
+        //@TODO: Update this to the current implementation in paper.js (Moka @ 03/23/2017)
+
         //early out for zero case
         if (std::abs(_offset) <= std::numeric_limits<ValueType>::epsilon())
             return 0.0;
@@ -839,7 +834,7 @@ namespace crunch
         stick::UInt32 numIters = 0;
 
         //refine the initial guess
-        while (abs(error) > s_tolerance)
+        while (abs(error) > epsilon)
         {
             if (start == guess)
                 break;
@@ -861,7 +856,7 @@ namespace crunch
 
             // See if we can trust the Newton-Raphson result. If not we use
             // bisection to find another candiate for Newton's method.
-            if (abs(error) < s_tolerance) //early out
+            if (abs(error) < epsilon) //early out
             {
                 break;
             }
@@ -1054,6 +1049,7 @@ namespace crunch
     template<class T>
     bool BezierCubic<T>::isLinear(ValueType _epsilon) const
     {
+        //@TODO: Update this to the current implementation in paper.js (Moka @ 03/23/2017)
         VectorType a = abs(m_pointOne - m_handleOne);
         VectorType b = abs(m_pointTwo - m_handleTwo);
 
@@ -1063,6 +1059,7 @@ namespace crunch
     template<class T>
     bool BezierCubic<T>::isStraight() const
     {
+        //@TODO: Update this to the current implementation in paper.js (Moka @ 03/23/2017)
         if (isLinear())
             return true;
 
