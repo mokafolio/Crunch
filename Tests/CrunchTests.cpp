@@ -224,6 +224,21 @@ const Suite spec[] =
         BezierCubic2f loop(Vec2f(100, 200), Vec2f(250, 100), Vec2f(50, 100), Vec2f(200, 200));
         BezierCubic2f loop2(loop);
         auto result = loop.overlaps(loop2);
+        EXPECT(result.count);
+        EXPECT(result.count == 2);
+        EXPECT(isClose(result.values[0].x, 0.0f));
+        EXPECT(isClose(result.values[0].y, 0.0f));
+        EXPECT(isClose(result.values[1].x, 1.0f));
+        EXPECT(isClose(result.values[1].y, 1.0f));
+
+        BezierCubic2f loop3 = loop.slice(0.25, 0.75);
+        auto result2 = loop.overlaps(loop3);
+        EXPECT(result2.count);
+        EXPECT(result2.count == 2);
+        EXPECT(isClose(result2.values[0].x, 0.25f, BezierCubic2f::epsilon));
+        EXPECT(isClose(result2.values[0].y, 0.0f, BezierCubic2f::epsilon));
+        EXPECT(isClose(result2.values[1].x, 0.75f, BezierCubic2f::epsilon));
+        EXPECT(isClose(result2.values[1].y, 1.0f, BezierCubic2f::epsilon));
     }
 };
 
