@@ -1345,19 +1345,21 @@ namespace crunch
         }
 
         if (ret.count != 2)
+        {
             return OverlapsResult();
+        }
         else if (bStraightBoth)
         {
             // Straight pairs don't need further checks. If we found 2 pairs,
             // the end points on v1 & v2 should be the same.
-            var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
-                o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+            BezierCubic o1 = slice(ret.values[0].x, ret.values[1].x);
+            BezierCubic o2 = _other.slice(ret.values[0].y, ret.values[1].y);
             // Check if handles of the overlapping curves are the same too.
-            if (abs(o2[2] - o1[2]) > geomEpsilon ||
-                    abs(o2[3] - o1[3]) > geomEpsilon ||
-                    abs(o2[4] - o1[4]) > geomEpsilon ||
-                    abs(o2[5] - o1[5]) > geomEpsilon)
-                pairs = null;
+            if (abs(o2.m_handleOne.x - o1.m_handleOne.x) > geometricEpsilon ||
+                    abs(o2.m_handleOne.y - o1.m_handleOne.y) > geometricEpsilon ||
+                    abs(o2.m_handleTwo.x - o1.m_handleTwo.x) > geometricEpsilon ||
+                    abs(o2.m_handleTwo.y - o1.m_handleTwo.y) > geometricEpsilon)
+                return OverlapsResult();
         }
 
         return ret;
