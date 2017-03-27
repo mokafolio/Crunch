@@ -13,7 +13,7 @@ namespace crunch
      * TODO: make the lookup tables bigger to support more than 16 iterations.
      */
     template<class F, class T>
-    T integrateGauss(F _callable, T _a, T _b, stick::Size _iterationCount)
+    T integrate(F _callable, T _a, T _b, stick::Size _iterationCount)
     {
         static const T s_abscissas[16][8] =
         {

@@ -362,7 +362,7 @@ namespace crunch
 
         void derivativeCoefficients(VectorType & _a, VectorType & _b, VectorType & _c) const;
 
-        ValueType arcLength(ValueType _t, const VectorType & _a, const VectorType & _b, const VectorType & _c);
+        static ValueType arcLength(ValueType _t, const VectorType & _a, const VectorType & _b, const VectorType & _c);
 
     private:
 
@@ -814,7 +814,13 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::ValueType BezierCubic<T>::lengthBetween(ValueType _t0, ValueType _t1) const
     {
-        return integrate(detail::LengthIntegrand<BezierCubic>(*this));
+        // Comment from PaperJS source in Curve.js:
+        // Guess required precision based on stick::Size of range...
+        // TODO: There should be much better educated guesses for
+        // this. Also, what does this depend on? Required precision?
+        stick::UInt32 iterationCount = max(2, min(16, static_cast<stick::Int32>((ceil(abs(_t1 - _t0) * 32)))));
+
+        return integrate(detail::LengthIntegrand<BezierCubic>(*this), _t0, _t1, iterationCount);
     }
 
     template<class T>
