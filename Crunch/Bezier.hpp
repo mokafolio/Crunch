@@ -762,10 +762,6 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::ValueType BezierCubic<T>::parameterOf(const VectorType & _point) const
     {
-        //@TODO: Put these into one place (i.e. static constexpr members of the class based on T)
-        ValueType epsilon = std::numeric_limits<ValueType>::epsilon();
-        ValueType geomEpsilon = 1e-6;
-
         // Before solving cubics, compare the beginning and end of the curve
         // with zero epsilon:
         if (!isClose(m_pointOne, _point) && !isClose(m_pointTwo, _point))
@@ -776,23 +772,23 @@ namespace crunch
             auto resultHor = solveCubic(_point.x, true, (ValueType)0, (ValueType)1);
             for (stick::Int32 i = 0; i < resultHor.count; i++)
             {
-                if (isClose(_point, positionAt(resultHor.values[i]), geomEpsilon))
+                if (isClose(_point, positionAt(resultHor.values[i]), geometricEpsilon))
                     return resultHor.values[i];
             }
 
             auto resultVert = solveCubic(_point.y, false, (ValueType)0, (ValueType)1);
             for (stick::Int32 i = 0; i < resultVert.count; i++)
             {
-                if (isClose(_point, positionAt(resultVert.values[i]), geomEpsilon))
+                if (isClose(_point, positionAt(resultVert.values[i]), geometricEpsilon))
                     return resultVert.values[i];
             }
         }
-        else if (isClose(m_pointOne, _point, geomEpsilon))
+        else if (isClose(m_pointOne, _point, geometricEpsilon))
         {
             printf("START\n");
             return 0;
         }
-        else if (isClose(m_pointTwo, _point, geomEpsilon))
+        else if (isClose(m_pointTwo, _point, geometricEpsilon))
         {
             printf("END\n");
             return 1;
@@ -829,7 +825,7 @@ namespace crunch
         //@TODO: Update this to the current implementation in paper.js (Moka @ 03/23/2017)
 
         //early out for zero case
-        if (std::abs(_offset) <= std::numeric_limits<ValueType>::epsilon())
+        if (std::abs(_offset) <= epsilon)
             return 0.0;
 
         bool bForward = _offset > 0;
@@ -1255,10 +1251,6 @@ namespace crunch
         // if the curves are not straight, they might just have tiny handles
         // within geometric epsilon distance, so we have to check for that too.
 
-        //@TODO: Put all epsilons needed by this class into constexpr statics
-        //@TODO2: Also, make them based on T!
-        ValueType geomEpsilon = 1e-7;
-
         bool bStraight1 = isStraight();
         bool bStraight2 = _other.isStraight();
         bool bStraightBoth = bStraight1 && bStraight2;
@@ -1277,16 +1269,16 @@ namespace crunch
         // See if the starting and end point of curve two are very close to the
         // picked line. Note that the curve for the picked line might not
         // actually be a line, so we have to perform more checks after.
-        if (line.distance(l2.m_pointOne) < geomEpsilon &&
-                line.distance(l2.m_pointTwo) < geomEpsilon)
+        if (line.distance(l2.m_pointOne) < geometricEpsilon &&
+                line.distance(l2.m_pointTwo) < geometricEpsilon)
         {
             // If not both curves are straight, check against both of their
             // handles, and treat them as straight if they are very close.
             if (!bStraightBoth &&
-                    line.distance(l1.m_handleOne) < geomEpsilon &&
-                    line.distance(l1.m_handleTwo) < geomEpsilon &&
-                    line.distance(l2.m_handleOne) < geomEpsilon &&
-                    line.distance(l2.m_handleTwo) < geomEpsilon)
+                    line.distance(l1.m_handleOne) < geometricEpsilon &&
+                    line.distance(l1.m_handleTwo) < geometricEpsilon &&
+                    line.distance(l2.m_handleOne) < geometricEpsilon &&
+                    line.distance(l2.m_handleTwo) < geometricEpsilon)
             {
                 bStraight1 = bStraight2 = bStraightBoth = true;
             }
