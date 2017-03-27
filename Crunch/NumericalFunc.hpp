@@ -13,7 +13,7 @@ namespace crunch
      * TODO: make the lookup tables bigger to support more than 16 iterations.
      */
     template<class F, class T>
-    T integrateGauss(const F & _function, T _a, T _b, stick::Size _iterationCount)
+    T integrateGauss(F _callable, T _a, T _b, stick::Size _iterationCount)
     {
         static const T s_abscissas[16][8] =
         {
@@ -64,12 +64,12 @@ namespace crunch
 
         stick::UInt32 i = 0;
         stick::Size lookUpCount = (_iterationCount + 1) >> 1;
-        ret = isOdd(_iterationCount) ? weights[i++] * _function(b) : 0;
+        ret = isOdd(_iterationCount) ? weights[i++] * _callable(b) : 0;
 
         while (i < lookUpCount)
         {
             T aa = a * abscissas[i];
-            ret += weights[i++] * (_function(b + aa) + _function(b - aa));
+            ret += weights[i++] * (_callable(b + aa) + _callable(b - aa));
         }
 
         return a * ret;
