@@ -218,6 +218,12 @@ const Suite spec[] =
 
         auto param = loop.parameterOf(Vec2f(0, 0));
         EXPECT(param == -1);
+    },
+    SUITE("Bezier::overlaps Tests")
+    {
+        BezierCubic2f loop(Vec2f(100, 200), Vec2f(250, 100), Vec2f(50, 100), Vec2f(200, 200));
+        BezierCubic2f loop2(loop);
+        auto result = loop.overlaps(loop2);
     }
 };
 

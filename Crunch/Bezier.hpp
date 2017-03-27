@@ -355,7 +355,13 @@ namespace crunch
 
         struct OverlapsResult
         {
-            ValueType values[4];
+            OverlapsResult() :
+                count(0)
+            {
+            }
+
+            VectorType values[2];
+            stick::Int32 count;
         };
 
         OverlapsResult overlaps(const BezierCubic & _other) const;
@@ -553,6 +559,7 @@ namespace crunch
     template<class T>
     BezierCubic<T> BezierCubic<T>::slice(ValueType _fromT, ValueType _toT) const
     {
+        bool bFlip = _fromT > _toT;
         BezierCubic ret = *this;
 
         if (_fromT > 0)
@@ -564,7 +571,10 @@ namespace crunch
         if (_toT < 1)
             ret = ret.subdivide((_toT - _fromT) / (1.0 - _fromT)).first;
 
-        return ret;
+        if(!bFlip)
+            return ret;
+        else
+            return BezierCubic(ret.m_pointTwo, ret.m_handleTwo, ret.m_handleOne, ret.m_pointOne);
     }
 
     namespace detail
@@ -1241,6 +1251,32 @@ namespace crunch
         }
     }
 
+    namespace detail
+    {
+        template<class T>
+        inline void findOverlap(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
+                                typename BezierCubic<T>::ValueType _aParameter, bool _bFlip,
+                                typename BezierCubic<T>::OverlapsResult & _outResult)
+        {
+            using ValueType = typename BezierCubic<T>::ValueType;
+            using VectorType = typename BezierCubic<T>::VectorType;
+
+            ValueType t0 = _aParameter;
+            ValueType t1 = _a.parameterOf(_aParameter ? _b.positionTwo() : _b.positionOne());
+
+            // if the point is on the curve
+            if (t1 != -1)
+            {
+                VectorType pair = _bFlip ? VectorType(t0, t1) : VectorType(t1, t0);
+                if (!_outResult.count || (abs(pair[0] - _outResult.values[0].x) > BezierCubic<T>::curveTimeEpsilon &&
+                                          abs(pair[1] - _outResult.values[0].y) > BezierCubic<T>::curveTimeEpsilon))
+                {
+                    _outResult.values[_outResult.count++] = pair;
+                }
+            }
+        }
+    }
+
     template<class T>
     typename BezierCubic<T>::OverlapsResult BezierCubic<T>::overlaps(const BezierCubic & _other) const
     {
@@ -1296,6 +1332,35 @@ namespace crunch
             // otherwise they cannot overlap.
             return OverlapsResult();
         }
+
+        OverlapsResult ret;
+        detail::findOverlap(*this, _other, 0, false, ret);
+        detail::findOverlap(_other, *this, 0, true, ret);
+        if (ret.count < 2)
+        {
+            detail::findOverlap(*this, _other, 1, false, ret);
+            //if we are still missing one
+            if (ret.count == 1)
+                detail::findOverlap(_other, *this, 1, true, ret);
+        }
+
+        if (ret.count != 2)
+            return OverlapsResult();
+        else if (bStraightBoth)
+        {
+            // Straight pairs don't need further checks. If we found 2 pairs,
+            // the end points on v1 & v2 should be the same.
+            var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
+                o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+            // Check if handles of the overlapping curves are the same too.
+            if (abs(o2[2] - o1[2]) > geomEpsilon ||
+                    abs(o2[3] - o1[3]) > geomEpsilon ||
+                    abs(o2[4] - o1[4]) > geomEpsilon ||
+                    abs(o2[5] - o1[5]) > geomEpsilon)
+                pairs = null;
+        }
+
+        return ret;
     }
 
     typedef BezierCubic<Vector2<stick::Float32> > BezierCubic2f;
