@@ -44,6 +44,7 @@ namespace crunch
             constexpr static stick::Float32 epsilon = 1e-5f;
             constexpr static stick::Float32 machineEpsilon = std::numeric_limits<stick::Float32>::epsilon();
             constexpr static stick::Float32 curveTimeEpsilon = 1e-4f;
+            constexpr static stick::Float32 fatlineEpsilon = 1e-5f;
             constexpr static stick::Float32 geometricEpsilon = 1e-3f;
             constexpr static stick::Float32 trigonometricEpsilon = 1e-4f;
         };
@@ -55,6 +56,7 @@ namespace crunch
             constexpr static stick::Float64 epsilon = 1e-12;
             constexpr static stick::Float64 machineEpsilon = std::numeric_limits<stick::Float64>::epsilon();
             constexpr static stick::Float64 curveTimeEpsilon = 1e-8;
+            constexpr static stick::Float64 fatlineEpsilon = 1e-9f;
             constexpr static stick::Float64 geometricEpsilon = 1e-7;
             constexpr static stick::Float64 trigonometricEpsilon = 1e-8;
         };
@@ -1396,23 +1398,38 @@ namespace crunch
 
     namespace detail
     {
+        // fat line clipping implementation
         template<class T>
-        inline void addLineIntersection(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
-                                        typename BezierCubic<T>::IntersectionResult & _outResult, bool bFlip)
+        stick::Int32 curveIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
+                                        typename BezierCubic<T>::IntersectionResult & _outResult, bool _bFlip,
+                                        stick::Int32 _calls, stick::Int32 _recursion,
+                                        typename BezierCubic<T>::ValueType _tMin, typename BezierCubic<T>::ValueType _tMax,
+                                        typename BezierCubic<T>::ValueType _uMin, typename BezierCubic<T>::ValueType _uMax)
         {
             using ValueType = typename BezierCubic<T>::ValueType;
             using VectorType = typename BezierCubic<T>::VectorType;
 
-            Line<VectorType> lineA(_a.positionOne(), _a.positionTwo());
-            Line<VectorType> lineB(_b.positionOne(), _b.positionTwo());
+            // Avoid deeper recursion, by counting the total amount of recursions,
+            // as well as the total amount of calls, to avoid massive call-trees as
+            if (++_calls >= 4096 || ++_recursion >= 40)
+                return _calls;
 
-        }
+            static auto fatlineEpsilon = BezierCubic<T>::fatlineEpsilon;
 
-        template<class T>
-        inline void addCurveLineIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
-                                              typename BezierCubic<T>::IntersectionResult & _outResult, bool bFlip)
-        {
+            LineSegment<VectorType> line(_b.positionOne(), _b.positionTwo());
+            ValueType d1 = line.signedDistance(_b.handleOne());
+            ValueType d2 = line.signedDistance(_b.handleTwo());
+            ValueType factor = d1 * d2 > 0 ? 3.0 / 4.0 : 4.0 / 9.0;
+            ValueType dMin = factor * min(0, min(d1, d2));
+            ValueType dMax = factor * max(0, max(d1, d2));
 
+            // Calculate non-parametric bezier curve D(ti, di(t)):
+            // - di(t) is the distance of P from baseline l of the fat-line
+            // - ti is equally spaced in [0, 1]
+            dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
+            dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
+            dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
+            dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
         }
 
         template<class T>
@@ -1465,6 +1482,13 @@ namespace crunch
                 }
                 else if (bStraight1 || bStraight2)
                 {
+                    /**
+                     * Intersections between curve and line becomes rather simple here.
+                     * We can rotate the curve and line so that the
+                     * line is on the X axis, and solve the implicit equations for the X axis
+                     * and the curve.
+                     */
+
                     //make sure a is always the curven and b the straight one
                     const BezierCubic * a = this;
                     const BezierCubic * b = &_other;
@@ -1495,7 +1519,18 @@ namespace crunch
                         VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.positionOne(), s, c);
                         BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
                         auto roots = bez.solveCubic(0, false, 0, 1);
+
+                        for (stick::Int32 i = 0; i < roots.count; ++i)
+                        {
+                            auto t2 = b->parameterOf(a->positionAt(roots[i]));
+                            ret.values[ret.count++] = bFlip ? VectorType(t2, roots[i]) : VectorType(roots[i], t2);
+                        }
                     }
+                }
+                else
+                {
+                    // fat line clipping for curve curve intersecting
+
                 }
             }
         }
