@@ -1398,6 +1398,102 @@ namespace crunch
 
     namespace detail
     {
+        /**
+        * Calculate the convex hull for the non-parametric bezier curve D(ti, di(t))
+        * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
+        * di(t), [dq0, dq1, dq2, dq3] respectively. In other words our CVs for the
+        * curve are already sorted in the X axis in the increasing order.
+        * Calculating convex-hull is much easier than a set of arbitrary points.
+        *
+        * The convex-hull is returned as two parts [TOP, BOTTOM]:
+        * (both are in a coordinate space where y increases upwards with origin at
+        * bottom-left)
+        * TOP: The part that lies above the 'median' (line connecting end points of
+        * the curve)
+        * BOTTOM: The part that lies below the median.
+        */
+
+        template<class T>
+        struct ConvexHull
+        {
+            struct HullPart
+            {
+                HullPart() :
+                    count(0)
+                {
+                }
+
+                HullPart(std::initializer_list<Vector2<T>> _list) :
+                    count(0)
+                {
+                    for (const auto & vec : _list)
+                    {
+                        append(vec);
+                    }
+                }
+
+                void append(const Vector2<T> & _val)
+                {
+                    STICK_ASSERT(count < 4);
+                    values[count++] = _val;
+                }
+
+                Vector2<T> values[4];
+                stick::Int32 count;
+            };
+
+            HullPart top;
+            HullPart bottom;
+        };
+
+        template<class T>
+        inline ConvexHull<T> convexHull(T _dq0, T _dq1, T _dq2, T _dq3)
+        {
+            ConvexHull<T> ret;
+
+            Vector2<T> p0(0, _dq0);
+            Vector2<T> p1(1.0 / 3.0, _dq1);
+            Vector2<T> p2(2.0 / 3.0, _dq2);
+            Vector2<T> p3(1, _dq3);
+
+            // Find vertical signed distance of p1 and p2 from line [p0, p3]
+            T dist1 = _dq1 - (2 * _dq0 + _dq3) / 3.0;
+            T dist2 = _dq2 - (_dq0 + 2 * _dq3) / 3.0;
+
+            // Check if p1 and p2 are on the opposite side of the line [p0, p3]
+            if (dist1 * dist2 < 0)
+            {
+                // p1 and p2 lie on different sides of [p0, p3]. The hull is a
+                // quadrilateral and line [p0, p3] is NOT part of the hull so we are
+                // pretty much done here. The top part includes p1, we will reverse
+                // it later if that is not the case.
+                ret = {{p0, p1, p3}, {p0, p2, p3}};
+            }
+            else
+            {
+                // p1 and p2 lie on the same sides of [p0, p3]. The hull can be a
+                // triangle or a quadrilateral and line [p0, p3] is part of the
+                // hull. Check if the hull is a triangle or a quadrilateral. We have
+                // a triangle if the vertical distance of one of the middle points
+                // (p1, p2) is equal or less than half the vertical distance of the
+                // other middle point.
+//                 T distRatio = dist1 / dist2;
+//                 ret =
+//                 {
+//                     // p2 is inside, the hull is a triangle.
+//                     distRatio >= 2 ? {p0, p1, p3}
+//                     // p1 is inside, the hull is a triangle.
+// : distRatio <= 0.5 ? {p0, p2, p3}
+//                     // Hull is a quadrilateral, we need all lines in correct order.
+// : [p0, p1, p2, p3],
+//                     // Line [p0, p3] is part of the hull.
+//                     [p0, p3]
+//                 };
+            }
+
+
+        }
+
         // fat line clipping implementation
         template<class T>
         stick::Int32 curveIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
@@ -1426,10 +1522,10 @@ namespace crunch
             // Calculate non-parametric bezier curve D(ti, di(t)):
             // - di(t) is the distance of P from baseline l of the fat-line
             // - ti is equally spaced in [0, 1]
-            dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
-            dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
-            dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
-            dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
+            ValueType dp0 = line.signedDistance(_a.positionOne());
+            ValueType dp1 = line.signedDistance(_a.handleOne());
+            ValueType dp2 = line.signedDistance(_a.handleTwo());
+            ValueType dp3 = line.signedDistance(_a.positionTwo());
         }
 
         template<class T>
