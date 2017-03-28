@@ -331,7 +331,7 @@ namespace crunch
      * @param _epsilon An epsilon value for floating point comparison.
      */
     template<class T>
-    inline bool isColinear(const Vector2<T> & _a, const Vector2<T> & _b, T _epsilon = std::numeric_limits<T>::epsilon())
+    inline bool isCollinear(const Vector2<T> & _a, const Vector2<T> & _b, T _epsilon = std::numeric_limits<T>::epsilon())
     {
         return isClose(cross(_a, _b), static_cast<T>(0), _epsilon);
     }

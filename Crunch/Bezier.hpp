@@ -241,6 +241,8 @@ namespace crunch
          */
         RectangleType bounds(ValueType _padding = 0) const;
 
+        RectangleType handleBounds() const;
+
         /**
          * From paper.js src:
          * Returns the t values for the "peaks" of the curve. The peaks are
@@ -345,7 +347,7 @@ namespace crunch
          *
          * @param _epsilon An epsilon value that changes the tolerance of the internal calculation.
          */
-        bool isLinear(ValueType _epsilon = geometricEpsilon) const;
+        bool isLinear(ValueType _epsilon = epsilon) const;
 
         bool isStraight() const;
 
@@ -365,6 +367,20 @@ namespace crunch
         };
 
         OverlapsResult overlaps(const BezierCubic & _other) const;
+
+
+        struct IntersectionResult
+        {
+            IntersectionResult() :
+                count(0)
+            {
+            }
+
+            VectorType values[9];
+            stick::Int32 count;
+        };
+
+        IntersectionResult intersections(const BezierCubic & _other) const;
 
         void derivativeCoefficients(VectorType & _a, VectorType & _b, VectorType & _c) const;
 
@@ -571,7 +587,7 @@ namespace crunch
         if (_toT < 1)
             ret = ret.subdivide((_toT - _fromT) / (1.0 - _fromT)).first;
 
-        if(!bFlip)
+        if (!bFlip)
             return ret;
         else
             return BezierCubic(ret.m_pointTwo, ret.m_handleTwo, ret.m_handleOne, ret.m_pointOne);
@@ -640,6 +656,12 @@ namespace crunch
         detail::setMinMaxForRoots(yRoots, tMin, tMax, _padding, min.y, max.y, *this, false);
 
         return RectangleType(min, max);
+    }
+
+    template<class T>
+    typename BezierCubic<T>::RectangleType BezierCubic<T>::handleBounds() const
+    {
+        return RectangleType(min(m_handleOne.min(), m_handleTwo.min()), max(m_handleOne.max(), m_handleTwo.max()));
     }
 
     template<class T>
@@ -1099,15 +1121,21 @@ namespace crunch
         if (isClose(line, VectorType(0)))
             return false;
 
-        if (isColinear(handleOne(), line) && isColinear(handleTwo(), line))
+        if (isCollinear(handleOne(), line) && isCollinear(handleTwo(), line))
         {
             // Collinear handles. Project them onto line to see if they are
             // within the line's range:
-            ValueType d = dot(line, line);
-            ValueType p1 = dot(line, handleOne()) / d;
-            ValueType p2 = dot(line, handleTwo()) / d;
 
-            return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+            Line<VectorType> l = Line<VectorType>::fromPoints(m_pointOne, m_pointTwo);
+            if (l.distance(m_handleOne) < geometricEpsilon &&
+                l.distance(m_handleTwo) < geometricEpsilon)
+            {
+                ValueType d = dot(line, line);
+                ValueType p1 = dot(line, handleOne()) / d;
+                ValueType p2 = dot(line, handleTwo()) / d;
+
+                return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+            }
         }
 
         return false;
@@ -1360,6 +1388,35 @@ namespace crunch
                     abs(o2.m_handleTwo.x - o1.m_handleTwo.x) > geometricEpsilon ||
                     abs(o2.m_handleTwo.y - o1.m_handleTwo.y) > geometricEpsilon)
                 return OverlapsResult();
+        }
+
+        return ret;
+    }
+
+    template<class T>
+    typename BezierCubic<T>::IntersectionResult BezierCubic<T>::intersections(const BezierCubic & _other) const
+    {
+        IntersectionResult ret;
+
+        // Avoid checking curves if completely out of control bounds.
+        RectangleType myHandleBounds = handleBounds();
+        RectangleType otherHandleBounds = _other.handleBounds();
+        if (myHandleBounds.overlaps(otherHandleBounds))
+        {
+            // if we overlap, we are done.
+            auto ol = overlaps(_other);
+            if (ol.count)
+            {
+                for (stick::Int32 i = 0; i < 2; ++i)
+                {
+                    ret.values[ret.count++] = ol.values[i];
+                }
+            }
+            else
+            {
+                //otherwise we find the intersections
+
+            }
         }
 
         return ret;
