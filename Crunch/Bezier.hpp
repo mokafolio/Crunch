@@ -3,6 +3,7 @@
 
 #include <Stick/DynamicArray.hpp>
 #include <Crunch/Line.hpp>
+#include <Crunch/LineSegment.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/CommonFunc.hpp>
 #include <Crunch/UtilityFunc.hpp>
@@ -1128,7 +1129,7 @@ namespace crunch
 
             Line<VectorType> l = Line<VectorType>::fromPoints(m_pointOne, m_pointTwo);
             if (l.distance(m_handleOne) < geometricEpsilon &&
-                l.distance(m_handleTwo) < geometricEpsilon)
+                    l.distance(m_handleTwo) < geometricEpsilon)
             {
                 ValueType d = dot(line, line);
                 ValueType p1 = dot(line, handleOne()) / d;
@@ -1393,6 +1394,36 @@ namespace crunch
         return ret;
     }
 
+    namespace detail
+    {
+        template<class T>
+        inline void addLineIntersection(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
+                                        typename BezierCubic<T>::IntersectionResult & _outResult, bool bFlip)
+        {
+            using ValueType = typename BezierCubic<T>::ValueType;
+            using VectorType = typename BezierCubic<T>::VectorType;
+
+            Line<VectorType> lineA(_a.positionOne(), _a.positionTwo());
+            Line<VectorType> lineB(_b.positionOne(), _b.positionTwo());
+
+        }
+
+        template<class T>
+        inline void addCurveLineIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
+                                              typename BezierCubic<T>::IntersectionResult & _outResult, bool bFlip)
+        {
+
+        }
+
+        template<class T>
+        inline Vector2<T> alignWithLineHelper(const Vector2<T> & _point, const Vector2<T> & _lineStart, T _sinVal, T _cosVal)
+        {
+            T x = _point.x - _lineStart.x;
+            T y = _point.y - _lineStart.y;
+            return {x * _cosVal - y * _sinVal, x * _sinVal + y * _cosVal};
+        }
+    }
+
     template<class T>
     typename BezierCubic<T>::IntersectionResult BezierCubic<T>::intersections(const BezierCubic & _other) const
     {
@@ -1404,6 +1435,8 @@ namespace crunch
         if (myHandleBounds.overlaps(otherHandleBounds))
         {
             // if we overlap, we are done.
+            // @TODO: Technically there can be other intersections than the two overlap start and
+            // endpoints, so we should most likely do that eventually!
             auto ol = overlaps(_other);
             if (ol.count)
             {
@@ -1415,7 +1448,55 @@ namespace crunch
             else
             {
                 //otherwise we find the intersections
+                bool bStraight1 = isStraight();
+                bool bStraight2 = _other.isStraight();
+                bool bStraightBoth = bStraight1 && bStraight2;
+                bool bFlip = bStraight1 && !bStraight2;
 
+                if (bStraightBoth)
+                {
+                    //find the intersection between the two line segments
+                    LineSegment<VectorType> lineA(positionOne(), positionTwo());
+                    LineSegment<VectorType> lineB(_other.positionOne(), _other.positionTwo());
+                    if (auto result = inetersect(lineA, lineB))
+                    {
+                        ret.values[ret.count++] = result.intersections()[0];
+                    }
+                }
+                else if (bStraight1 || bStraight2)
+                {
+                    //make sure a is always the curven and b the straight one
+                    const BezierCubic * a = this;
+                    const BezierCubic * b = &_other;
+                    if (bFlip) std::swap(a, b);
+
+                    LineSegment<VectorType> line(b->m_pointOne, b->m_pointTwo);
+                    if (isClose(line.direction(), 0, epsilon))
+                    {
+                        // Handle special case of a line with no direction as a point,
+                        // and check if it is on the curve.
+                        auto t = a->parameterOf(b->m_pointOne);
+                        if (t != -1)
+                        {
+                            ret.values[ret.count++] = bFlip ? VectorType(0, t) : VectorType(t, 0);
+                        }
+                    }
+                    else
+                    {
+                        // Calculate angle to the x-axis (1, 0).
+                        auto dir = line.direction();
+                        ValueType angle = std::atan2(-dir.y, dir.x);
+                        ValueType s = std::sin(angle);
+                        ValueType c = std::cos(angle);
+
+                        VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.positionOne(), s, c);
+                        VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.positionOne(), s, c);
+                        VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.positionOne(), s, c);
+                        VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.positionOne(), s, c);
+                        BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
+                        auto roots = bez.solveCubic(0, false, 0, 1);
+                    }
+                }
             }
         }
 
