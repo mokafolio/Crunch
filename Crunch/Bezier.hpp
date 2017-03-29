@@ -1477,21 +1477,40 @@ namespace crunch
                 // a triangle if the vertical distance of one of the middle points
                 // (p1, p2) is equal or less than half the vertical distance of the
                 // other middle point.
-//                 T distRatio = dist1 / dist2;
-//                 ret =
-//                 {
-//                     // p2 is inside, the hull is a triangle.
-//                     distRatio >= 2 ? {p0, p1, p3}
-//                     // p1 is inside, the hull is a triangle.
-// : distRatio <= 0.5 ? {p0, p2, p3}
-//                     // Hull is a quadrilateral, we need all lines in correct order.
-// : [p0, p1, p2, p3],
-//                     // Line [p0, p3] is part of the hull.
-//                     [p0, p3]
-//                 };
+                T distRatio = dist1 / dist2;
+
+                typename ConvexHull<T>::HullPart top;
+                if (distRatio >= 2)
+                {
+                    // p2 is inside, the hull is a triangle.
+                    top = {p0, p1, p3};
+                }
+                else if (distRatio <= 0.5)
+                {
+                    // p1 is inside, the hull is a triangle.
+                    top = {p0, p2, p3};
+                }
+                else
+                {
+                    // Hull is a quadrilateral, we need all lines in correct order.
+                    top = {p0, p1, p2, p3};
+                }
+
+                ret =
+                {
+                    top,
+                    // Line [p0, p3] is part of the hull.
+                    {p0, p3}
+                };
             }
 
+            // Flip hull if dist1 is negative or if it is zero and dist2 is negative
+            if ((dist1 || dist2) < 0)
+            {
+                std::swap(ret.top, ret.bottom);
+            }
 
+            return ret;
         }
 
         // fat line clipping implementation
