@@ -2,6 +2,7 @@
 #define CRUNCH_BEZIER_HPP
 
 #include <Stick/DynamicArray.hpp>
+#include <Stick/Maybe.hpp>
 #include <Crunch/Line.hpp>
 #include <Crunch/LineSegment.hpp>
 #include <Crunch/GeometricFunc.hpp>
@@ -1513,13 +1514,62 @@ namespace crunch
             return ret;
         }
 
+        template<class T>
+        inline stick::Maybe<T> clipConvexHullPart(const typename ConvexHull<T>::HullPart & _part, bool _bTop, T _threshold)
+        {
+            T px = _part.values[0].x;
+            T py = _part.values[0].y;
+
+            for (stick::Int32 i = 0; i < _part.count; ++i)
+            {
+                T qx = _part.values[i].x;
+                T qy = _part.values[i].y;
+
+                if ((_bTop && qy >= _threshold) || qy <= _threshold)
+                {
+                    return qy == _threshold ? qx : px + (_threshold - py) * (qx - px) / (qy - py);
+                }
+
+                px = qx;
+                py = qy;
+            }
+
+            return stick::Maybe<T>();
+        }
+
+        /**
+         * Clips the convex-hull and returns [tMin, tMax] for the curve contained.
+         */
+
+        template<class T>
+        inline T clipConvexHull(const ConvexHull<T> & _hull, T _dMin, T _dMax)
+        {
+            if (_hull.top.values[0].y < _dMin)
+            {
+                // Left of hull is below dMin, walk through the hull until it
+                // enters the region between dMin and dMax
+                return clipConvexHullPart(_hull.top, true, _dMin);
+            }
+            else if (_hull.bottom.values[0].y > _dMax)
+            {
+                // Left of hull is above dMax, walk through the hull until it
+                // enters the region between dMin and dMax
+                return clipConvexHullPart(_hull.bottom, false, _dMax);
+            }
+            else
+            {
+                // Left of hull is between dMin and dMax, no clipping possible
+                return _hull.top.values[0].x;
+            }
+        }
+
         // fat line clipping implementation
         template<class T>
-        stick::Int32 curveIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
-                                        typename BezierCubic<T>::IntersectionResult & _outResult, bool _bFlip,
-                                        stick::Int32 _calls, stick::Int32 _recursion,
-                                        typename BezierCubic<T>::ValueType _tMin, typename BezierCubic<T>::ValueType _tMax,
-                                        typename BezierCubic<T>::ValueType _uMin, typename BezierCubic<T>::ValueType _uMax)
+        inline stick::Int32 curveIntersections(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
+                                               typename BezierCubic<T>::IntersectionResult & _outResult, bool _bFlip,
+                                               stick::Int32 _calls, stick::Int32 _recursion,
+                                               typename BezierCubic<T>::ValueType _tMin, typename BezierCubic<T>::ValueType _tMax,
+                                               typename BezierCubic<T>::ValueType _uMin, typename BezierCubic<T>::ValueType _uMax)
         {
             using ValueType = typename BezierCubic<T>::ValueType;
             using VectorType = typename BezierCubic<T>::VectorType;
