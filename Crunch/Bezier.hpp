@@ -1571,8 +1571,9 @@ namespace crunch
                                                typename BezierCubic<T>::ValueType _tMin, typename BezierCubic<T>::ValueType _tMax,
                                                typename BezierCubic<T>::ValueType _uMin, typename BezierCubic<T>::ValueType _uMax)
         {
-            using ValueType = typename BezierCubic<T>::ValueType;
-            using VectorType = typename BezierCubic<T>::VectorType;
+            using BezierType = BezierCubic<T>;
+            using ValueType = typename BezierType::ValueType;
+            using VectorType = typename BezierType::VectorType;
 
             // Avoid deeper recursion, by counting the total amount of recursions,
             // as well as the total amount of calls, to avoid massive call-trees as
@@ -1609,6 +1610,54 @@ namespace crunch
                     || !(tMinClip = clipConvexHull(hull, dMin, dMax))
                     || !(tMaxClip = clipConvexHull(reverseHull, dMin, dMax)))
                 return _calls;
+
+            // just a sanity check...this should never be reached but the above if clause
+            // is somewhat messy oO
+            STICK_ASSERT(tMinClip && tMaxClip);
+
+            // tMin and tMax are within the range (0, 1). Project it back to the
+            // original parameter range for v2.
+            ValueType tMinNew = _tMin + (_tMax - _tMin) * *tMinClip;
+            ValueType tMaxNew = _tMin + (_tMax - _tMin) * *tMaxClip;
+
+            if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatlineEpsilon)
+            {
+                // We have isolated the intersection with sufficient precision
+                ValueType t = (tMinNew + tMaxNew) / 2.0;
+                ValueType u = (_uMin + _uMax) / 2.0;
+                _outResult.value[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
+            }
+            else
+            {
+                // Apply the result of the clipping to curve 1:
+                _a = _a.slice(*tMinClip, *tMaxClip);
+                if (*tMaxClip - *tMinClip > 0.8)
+                {
+                    // Subdivide the curve which has converged the least.
+                    if (tMaxNew - tMinNew > _uMax - _uMin)
+                    {
+                        auto pair = _a.subdivide(0.5);
+                        auto t = (tMinNew + tMaxNew) / 2.0;
+                        _calls = curveIntersections(
+                                     _b, pair.first, _outResult, !_bFlip,
+                                     _calls, _recursion, _uMin, _uMax, tMinNew, t);
+                        _calls = curveIntersections(
+                                     _b, pair.second, _outResult, !_bFlip,
+                                     _calls, _recursion, _uMin, _uMax, t, tMaxNew);
+                    }
+                    else
+                    {
+                        auto pair = _b.subdivide(0.5);
+                        auto u = (_uMin + _uMax) / 2.0;
+                        _calls = curveIntersections(
+                                     pair.first, _a, _outResult, !_bFlip,
+                                     _calls, _recursion, _uMin, u, tMinNew, tMaxNew);
+                        _calls = curveIntersections(
+                                     pair.second, _a, _outResult, !_bFlip,
+                                     _calls, _recursion, u, _uMax, tMinNew, tMaxNew);
+                    }
+                }
+            }
         }
 
         template<class T>
