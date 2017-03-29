@@ -1542,7 +1542,7 @@ namespace crunch
          */
 
         template<class T>
-        inline T clipConvexHull(const ConvexHull<T> & _hull, T _dMin, T _dMax)
+        inline stick::Maybe<T> clipConvexHull(const ConvexHull<T> & _hull, T _dMin, T _dMax)
         {
             if (_hull.top.values[0].y < _dMin)
             {
@@ -1595,6 +1595,20 @@ namespace crunch
             ValueType dp1 = line.signedDistance(_a.handleOne());
             ValueType dp2 = line.signedDistance(_a.handleTwo());
             ValueType dp3 = line.signedDistance(_a.positionTwo());
+
+            auto hull = convexHull(dp0, dp1, dp2, dp3);
+            auto reverseHull = hull;
+            std::reverse(&reverseHull.top[0], &reverseHull.top[0] + reverseHull.top.count);
+            std::reverse(&reverseHull.bottom[0], &reverseHull.bottom[0] + reverseHull.bottom.count);
+            stick::Maybe<ValueType> tMinClip, tMaxClip;
+            // Stop iteration if all points and control points are collinear.
+            if ((d1 == 0 && d2 == 0
+                    && dp0 == 0 && dp1 == 0 && dp2 == 0 && dp3 == 0)
+                    // Clip convex-hull with dMin and dMax, taking into account that
+                    // there will be no intersections if one of the results is null.
+                    || !(tMinClip = clipConvexHull(hull, dMin, dMax))
+                    || !(tMaxClip = clipConvexHull(reverseHull, dMin, dMax)))
+                return _calls;
         }
 
         template<class T>
