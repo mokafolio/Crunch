@@ -239,6 +239,12 @@ const Suite spec[] =
         EXPECT(isClose(result2.values[0].y, 0.0f, BezierCubic2f::epsilon));
         EXPECT(isClose(result2.values[1].x, 0.75f, BezierCubic2f::epsilon));
         EXPECT(isClose(result2.values[1].y, 1.0f, BezierCubic2f::epsilon));
+    },
+    SUITE("Bezier::intersections Tests")
+    {
+        BezierCubic2f a(Vec2f(100, 100), Vec2f(100, 100), Vec2f(300, 300), Vec2f(300, 300));
+        BezierCubic2f b(Vec2f(200, 50), Vec2f(200, 50), Vec2f(200, 150), Vec2f(200, 150));
+        auto res = a.intersections(b);
     }
 };
 

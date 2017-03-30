@@ -74,6 +74,9 @@ namespace crunch
          */
         stick::Int32 side(const VectorType & _point) const;
 
+        // //@TODO: Make this a free function and put it into Geometric Func?
+        // ValueType signedDistance(const VectorType & _point) const;
+        // ValueType distance(const VectorType & _point) const;
 
     private:
 
@@ -154,6 +157,42 @@ namespace crunch
         return cross < 0 ? -1 : cross > 0 ? 1 : 0;
     }
 
+    // template<class T>
+    // typename LineSegment<T>::ValueType LineSegment<T>::signedDistance(const VectorType & _point) const
+    // {
+    //     if (m_direction.x == 0)
+    //     {
+    //         if (m_direction.y > 0)
+    //         {
+    //             return _point.x - m_position.x;
+    //         }
+    //         else
+    //         {
+    //             return m_position.x - _point.x;
+    //         }
+    //     }
+    //     else if (m_direction.y == 0)
+    //     {
+    //         if (m_direction.x < 0)
+    //         {
+    //             return _point.y - m_position.y;
+    //         }
+    //         else
+    //         {
+    //             return m_position.y - _point.y;
+    //         }
+    //     }
+
+    //     return ((_point.x - m_position.x) * m_direction.y - (_point.y - m_position.y) * m_direction.x) /
+    //            std::sqrt(m_direction.x * m_direction.x + m_direction.y * m_direction.y);
+    // }
+
+    // template<class T>
+    // typename LineSegment<T>::ValueType LineSegment<T>::distance(const VectorType & _point) const
+    // {
+    //     return abs(signedDistance(_point));
+    // }
+
     template<class VT>
     IntersectionResult<VT> intersect(const LineSegment<VT> & _a, const LineSegment<VT> & _b);
 
@@ -177,8 +216,8 @@ namespace crunch
         Vector2<T> dir = _a.positionOne() - _b.positionOne();
         T d = (dir.y * dirB.x - dir.x * dirB.y) / cross;
         T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
- 
-        if(t >= 0 && t <= 1 && d >= 0 && d <= 1)
+
+        if (t >= 0 && t <= 1 && d >= 0 && d <= 1)
             results.append(_a.positionOne() + dirA * d);
 
         return IntersectionResult<Vector2<T> >(results);

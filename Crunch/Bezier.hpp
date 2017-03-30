@@ -4,7 +4,6 @@
 #include <Stick/DynamicArray.hpp>
 #include <Stick/Maybe.hpp>
 #include <Crunch/Line.hpp>
-#include <Crunch/LineSegment.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/CommonFunc.hpp>
 #include <Crunch/UtilityFunc.hpp>
@@ -45,7 +44,7 @@ namespace crunch
             constexpr static stick::Float32 epsilon = 1e-5f;
             constexpr static stick::Float32 machineEpsilon = std::numeric_limits<stick::Float32>::epsilon();
             constexpr static stick::Float32 curveTimeEpsilon = 1e-4f;
-            constexpr static stick::Float32 fatlineEpsilon = 1e-5f;
+            constexpr static stick::Float32 fatLineEpsilon = 1e-5f;
             constexpr static stick::Float32 geometricEpsilon = 1e-3f;
             constexpr static stick::Float32 trigonometricEpsilon = 1e-4f;
         };
@@ -57,7 +56,7 @@ namespace crunch
             constexpr static stick::Float64 epsilon = 1e-12;
             constexpr static stick::Float64 machineEpsilon = std::numeric_limits<stick::Float64>::epsilon();
             constexpr static stick::Float64 curveTimeEpsilon = 1e-8;
-            constexpr static stick::Float64 fatlineEpsilon = 1e-9f;
+            constexpr static stick::Float64 fatLineEpsilon = 1e-9f;
             constexpr static stick::Float64 geometricEpsilon = 1e-7;
             constexpr static stick::Float64 trigonometricEpsilon = 1e-8;
         };
@@ -107,6 +106,7 @@ namespace crunch
         constexpr static ValueType curveTimeEpsilon = detail::BezierTraits<ValueType>::curveTimeEpsilon;
         constexpr static ValueType geometricEpsilon = detail::BezierTraits<ValueType>::geometricEpsilon;
         constexpr static ValueType trigonometricEpsilon = detail::BezierTraits<ValueType>::trigonometricEpsilon;
+        constexpr static ValueType fatLineEpsilon = detail::BezierTraits<ValueType>::fatLineEpsilon;
 
         /**
          * @brief Default Constructor.
@@ -665,7 +665,7 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::RectangleType BezierCubic<T>::handleBounds() const
     {
-        return RectangleType(min(m_handleOne.min(), m_handleTwo.min()), max(m_handleOne.max(), m_handleTwo.max()));
+        return RectangleType(min(m_handleOne, m_handleTwo), max(m_handleOne, m_handleTwo));
     }
 
     template<class T>
@@ -1580,14 +1580,14 @@ namespace crunch
             if (++_calls >= 4096 || ++_recursion >= 40)
                 return _calls;
 
-            static auto fatlineEpsilon = BezierCubic<T>::fatlineEpsilon;
+            static auto fatLineEpsilon = BezierCubic<T>::fatLineEpsilon;
 
-            LineSegment<VectorType> line(_b.positionOne(), _b.positionTwo());
+            Line<VectorType> line = Line<VectorType>::fromPoints(_b.positionOne(), _b.positionTwo());
             ValueType d1 = line.signedDistance(_b.handleOne());
             ValueType d2 = line.signedDistance(_b.handleTwo());
             ValueType factor = d1 * d2 > 0 ? 3.0 / 4.0 : 4.0 / 9.0;
-            ValueType dMin = factor * min(0, min(d1, d2));
-            ValueType dMax = factor * max(0, max(d1, d2));
+            ValueType dMin = factor * min((ValueType)0.0, min(d1, d2));
+            ValueType dMax = factor * max((ValueType)0.0, max(d1, d2));
 
             // Calculate non-parametric bezier curve D(ti, di(t)):
             // - di(t) is the distance of P from baseline l of the fat-line
@@ -1599,8 +1599,8 @@ namespace crunch
 
             auto hull = convexHull(dp0, dp1, dp2, dp3);
             auto reverseHull = hull;
-            std::reverse(&reverseHull.top[0], &reverseHull.top[0] + reverseHull.top.count);
-            std::reverse(&reverseHull.bottom[0], &reverseHull.bottom[0] + reverseHull.bottom.count);
+            std::reverse(&reverseHull.top.values[0], &reverseHull.top.values[0] + reverseHull.top.count);
+            std::reverse(&reverseHull.bottom.values[0], &reverseHull.bottom.values[0] + reverseHull.bottom.count);
             stick::Maybe<ValueType> tMinClip, tMaxClip;
             // Stop iteration if all points and control points are collinear.
             if ((d1 == 0 && d2 == 0
@@ -1620,23 +1620,23 @@ namespace crunch
             ValueType tMinNew = _tMin + (_tMax - _tMin) * *tMinClip;
             ValueType tMaxNew = _tMin + (_tMax - _tMin) * *tMaxClip;
 
-            if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatlineEpsilon)
+            if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatLineEpsilon)
             {
                 // We have isolated the intersection with sufficient precision
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
-                _outResult.value[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
+                _outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
             }
             else
             {
                 // Apply the result of the clipping to curve 1:
-                _a = _a.slice(*tMinClip, *tMaxClip);
+                auto sliced = _a.slice(*tMinClip, *tMaxClip);
                 if (*tMaxClip - *tMinClip > 0.8)
                 {
                     // Subdivide the curve which has converged the least.
                     if (tMaxNew - tMinNew > _uMax - _uMin)
                     {
-                        auto pair = _a.subdivide(0.5);
+                        auto pair = sliced.subdivide(0.5);
                         auto t = (tMinNew + tMaxNew) / 2.0;
                         _calls = curveIntersections(
                                      _b, pair.first, _outResult, !_bFlip,
@@ -1650,14 +1650,32 @@ namespace crunch
                         auto pair = _b.subdivide(0.5);
                         auto u = (_uMin + _uMax) / 2.0;
                         _calls = curveIntersections(
-                                     pair.first, _a, _outResult, !_bFlip,
+                                     pair.first, sliced, _outResult, !_bFlip,
                                      _calls, _recursion, _uMin, u, tMinNew, tMaxNew);
                         _calls = curveIntersections(
-                                     pair.second, _a, _outResult, !_bFlip,
+                                     pair.second, sliced, _outResult, !_bFlip,
                                      _calls, _recursion, u, _uMax, tMinNew, tMaxNew);
                     }
                 }
+                else
+                {
+                    // Iterate
+                    if (_uMax - _uMin >= fatLineEpsilon)
+                    {
+                        _calls = curveIntersections(_b, sliced, _outResult, !_bFlip,
+                                                    _recursion, _calls, _uMin, _uMax, tMinNew, tMaxNew);
+                    }
+                    else
+                    {
+                        // The interval on the other curve is already tight enough,
+                        // therefore we keep iterating on the same curve.
+                        _calls = curveIntersections(sli, _b, _outResult, _bFlip,
+                                                    _recursion, _calls, tMinNew, tMaxNew, _uMin, _uMax);
+                    }
+                }
             }
+
+            return _calls;
         }
 
         template<class T>
@@ -1701,9 +1719,9 @@ namespace crunch
                 if (bStraightBoth)
                 {
                     //find the intersection between the two line segments
-                    LineSegment<VectorType> lineA(positionOne(), positionTwo());
-                    LineSegment<VectorType> lineB(_other.positionOne(), _other.positionTwo());
-                    if (auto result = inetersect(lineA, lineB))
+                    Line<VectorType> lineA = Line<VectorType>::fromPoints(positionOne(), positionTwo());
+                    Line<VectorType> lineB = Line<VectorType>::fromPoints(_other.positionOne(), _other.positionTwo());
+                    if (auto result = intersect(lineA, lineB))
                     {
                         ret.values[ret.count++] = result.intersections()[0];
                     }
@@ -1722,8 +1740,8 @@ namespace crunch
                     const BezierCubic * b = &_other;
                     if (bFlip) std::swap(a, b);
 
-                    LineSegment<VectorType> line(b->m_pointOne, b->m_pointTwo);
-                    if (isClose(line.direction(), 0, epsilon))
+                    Line<VectorType> line = Line<VectorType>::fromPoints(b->m_pointOne, b->m_pointTwo);
+                    if (isClose(line.direction(), VectorType(0), epsilon))
                     {
                         // Handle special case of a line with no direction as a point,
                         // and check if it is on the curve.
@@ -1741,24 +1759,27 @@ namespace crunch
                         ValueType s = std::sin(angle);
                         ValueType c = std::cos(angle);
 
-                        VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.positionOne(), s, c);
-                        VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.positionOne(), s, c);
-                        VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.positionOne(), s, c);
-                        VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.positionOne(), s, c);
+                        VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.position(), s, c);
+                        VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.position(), s, c);
+                        VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.position(), s, c);
+                        VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.position(), s, c);
                         BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
                         auto roots = bez.solveCubic(0, false, 0, 1);
 
                         for (stick::Int32 i = 0; i < roots.count; ++i)
                         {
-                            auto t2 = b->parameterOf(a->positionAt(roots[i]));
-                            ret.values[ret.count++] = bFlip ? VectorType(t2, roots[i]) : VectorType(roots[i], t2);
+                            auto t2 = b->parameterOf(a->positionAt(roots.values[i]));
+                            ret.values[ret.count++] = bFlip ? VectorType(t2, roots.values[i]) : VectorType(roots.values[i], t2);
                         }
                     }
                 }
                 else
                 {
                     // fat line clipping for curve curve intersecting
-
+                    if(bFlip)
+                        detail::curveIntersections(_other, *this, ret, bFlip, 0, 0, 0, 1, 0, 1);
+                    else
+                        detail::curveIntersections(*this, _other, ret, bFlip, 0, 0, 0, 1, 0, 1);
                 }
             }
         }
