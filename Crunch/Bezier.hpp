@@ -44,7 +44,7 @@ namespace crunch
             //@TODO: These are just good guesses right now
             constexpr static stick::Float32 epsilon = 1e-5f;
             constexpr static stick::Float32 machineEpsilon = std::numeric_limits<stick::Float32>::epsilon();
-            constexpr static stick::Float32 curveTimeEpsilon = 1e-4f;
+            constexpr static stick::Float32 curveTimeEpsilon = 1e-3f;
             constexpr static stick::Float32 fatLineEpsilon = 1e-5f;
             constexpr static stick::Float32 geometricEpsilon = 1e-3f;
             constexpr static stick::Float32 trigonometricEpsilon = 1e-4f;
@@ -1517,12 +1517,12 @@ namespace crunch
             T px = _part.values[0].x;
             T py = _part.values[0].y;
 
-            for (stick::Int32 i = 0; i < _part.count; ++i)
+            for (stick::Int32 i = 1; i < _part.count; ++i)
             {
                 T qx = _part.values[i].x;
                 T qy = _part.values[i].y;
 
-                if ((_bTop && qy >= _threshold) || qy <= _threshold)
+                if ((_bTop && qy >= _threshold) || (!_bTop && qy <= _threshold))
                 {
                     return qy == _threshold ? qx : px + (_threshold - py) * (qx - px) / (qy - py);
                 }
@@ -1577,6 +1577,8 @@ namespace crunch
             if (++_calls >= 4096 || ++_recursion >= 40)
                 return _calls;
 
+            printf("START CUVE INTRE\n");
+
             static auto fatLineEpsilon = BezierCubic<T>::fatLineEpsilon;
 
             Line<VectorType> line = Line<VectorType>::fromPoints(_b.positionOne(), _b.positionTwo());
@@ -1599,6 +1601,8 @@ namespace crunch
             std::reverse(&reverseHull.top.values[0], &reverseHull.top.values[0] + reverseHull.top.count);
             std::reverse(&reverseHull.bottom.values[0], &reverseHull.bottom.values[0] + reverseHull.bottom.count);
             stick::Maybe<ValueType> tMinClip, tMaxClip;
+            printf("%f %f %f %f\n", dp0, dp1, dp2, dp3);
+            printf("DMIN %f DMAX %f\n", dMin, dMax);
             // Stop iteration if all points and control points are collinear.
             if ((d1 == 0 && d2 == 0
                     && dp0 == 0 && dp1 == 0 && dp2 == 0 && dp3 == 0)
@@ -1606,7 +1610,14 @@ namespace crunch
                     // there will be no intersections if one of the results is null.
                     || !(tMinClip = clipConvexHull(hull, dMin, dMax))
                     || !(tMaxClip = clipConvexHull(reverseHull, dMin, dMax)))
+            {
+                if (!tMinClip)
+                    printf("NO TMINCLIP\n");
+                if (!tMaxClip)
+                    printf("NO tMaxClip\n");
+                printf("EARLY OUT\n");
                 return _calls;
+            }
 
             // just a sanity check...this should never be reached but the above if clause
             // is somewhat messy oO
@@ -1619,6 +1630,7 @@ namespace crunch
 
             if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatLineEpsilon)
             {
+                printf("ISOLATED INTERSECTION\n");
                 // We have isolated the intersection with sufficient precision
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
@@ -1630,6 +1642,7 @@ namespace crunch
             }
             else
             {
+                printf("TRYING\n");
                 // Apply the result of the clipping to curve 1:
                 auto sliced = _a.slice(*tMinClip, *tMaxClip);
                 if (*tMaxClip - *tMinClip > 0.8)
@@ -1637,6 +1650,7 @@ namespace crunch
                     // Subdivide the curve which has converged the least.
                     if (tMaxNew - tMinNew > _uMax - _uMin)
                     {
+                        printf("A\n");
                         auto pair = sliced.subdivide(0.5);
                         auto t = (tMinNew + tMaxNew) / 2.0;
                         _calls = curveIntersections(
@@ -1648,6 +1662,7 @@ namespace crunch
                     }
                     else
                     {
+                        printf("B\n");
                         auto pair = _b.subdivide(0.5);
                         auto u = (_uMin + _uMax) / 2.0;
                         _calls = curveIntersections(
@@ -1663,11 +1678,13 @@ namespace crunch
                     // Iterate
                     if (_uMax - _uMin >= fatLineEpsilon)
                     {
+                        printf("ITER A\n");
                         _calls = curveIntersections(_b, sliced, _outResult, !_bFlip,
                                                     _recursion, _calls, _uMin, _uMax, tMinNew, tMaxNew);
                     }
                     else
                     {
+                        printf("ITER B\n");
                         // The interval on the other curve is already tight enough,
                         // therefore we keep iterating on the same curve.
                         _calls = curveIntersections(sliced, _b, _outResult, _bFlip,
