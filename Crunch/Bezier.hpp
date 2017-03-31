@@ -1639,7 +1639,7 @@ namespace crunch
                 if (_bFlip)
                 {
                     printf("DA FLIPPED\n");
-                    _outResult.append(u, t, _a.positionAt(u));
+                    _outResult.append(u, t, _b.positionAt(u));
                 }
                 else
                 {
