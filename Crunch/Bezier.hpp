@@ -360,30 +360,28 @@ namespace crunch
 
         ClassificationResult<ValueType> classify() const;
 
-        struct OverlapsResult
-        {
-            OverlapsResult() :
-                count(0)
-            {
-            }
-
-            VectorType values[2];
-            stick::Int32 count;
-        };
-
-        OverlapsResult overlaps(const BezierCubic & _other) const;
-
-
         struct IntersectionResult
-        {
-            IntersectionResult() :
-                count(0)
+        {   
+            struct Intersection
             {
+                ValueType parameter;
+                VectorType position;
+            };
+
+            inline void append(ValueType _parameterOne, const VectorType & _positionOne,
+                ValueType _parameterTwo, const VectorType & _positionTwo)
+            {
+                first[count] = {_parameterOne, _positionOne};
+                second[count] = {_parameterTwo, _positionTwo};
+                count++;
             }
 
-            VectorType values[9];
-            stick::Int32 count;
+            Intersection first[9];
+            Intersection second[9];
+            stick::Int32 count = 0;
         };
+
+        IntersectionResult overlaps(const BezierCubic & _other) const;
 
         IntersectionResult intersections(const BezierCubic & _other) const;
 
@@ -1290,7 +1288,7 @@ namespace crunch
         template<class T>
         inline void findOverlap(const BezierCubic<T> & _a, const BezierCubic<T> & _b,
                                 typename BezierCubic<T>::ValueType _aParameter, bool _bFlip,
-                                typename BezierCubic<T>::OverlapsResult & _outResult)
+                                typename BezierCubic<T>::IntersectionResult & _outResult)
         {
             using ValueType = typename BezierCubic<T>::ValueType;
             using VectorType = typename BezierCubic<T>::VectorType;
@@ -1302,17 +1300,20 @@ namespace crunch
             if (t1 != -1)
             {
                 VectorType pair = _bFlip ? VectorType(t0, t1) : VectorType(t1, t0);
-                if (!_outResult.count || (abs(pair[0] - _outResult.values[0].x) > BezierCubic<T>::curveTimeEpsilon &&
-                                          abs(pair[1] - _outResult.values[0].y) > BezierCubic<T>::curveTimeEpsilon))
+                if (!_outResult.count || (abs(pair[0] - _outResult.first[0].parameter) > BezierCubic<T>::curveTimeEpsilon &&
+                                          abs(pair[1] - _outResult.second[0].parameter) > BezierCubic<T>::curveTimeEpsilon))
                 {
-                    _outResult.values[_outResult.count++] = pair;
+                    if(_bFlip)
+                        _outResult.append(t0, _a.positionAt(t0), t1, _b.positionAt(t1));
+                    else
+                        _outResult.append(t1, _b.positionAt(t1), t0, _a.positionAt(t0));
                 }
             }
         }
     }
 
     template<class T>
-    typename BezierCubic<T>::OverlapsResult BezierCubic<T>::overlaps(const BezierCubic & _other) const
+    typename BezierCubic<T>::IntersectionResult BezierCubic<T>::overlaps(const BezierCubic & _other) const
     {
         // Linear curves can only overlap if they are collinear. Instead of
         // using the #isCollinear() check, we pick the longer of the two curves
@@ -1357,17 +1358,17 @@ namespace crunch
         {
             // If both curves are straight and not very close to each other,
             // there can't be a solution.
-            return OverlapsResult();
+            return IntersectionResult();
         }
 
         if (bStraight1 ^ bStraight2)
         {
             // If one curve is straight, the other curve must be straight too,
             // otherwise they cannot overlap.
-            return OverlapsResult();
+            return IntersectionResult();
         }
 
-        OverlapsResult ret;
+        IntersectionResult ret;
         detail::findOverlap(*this, _other, 0, false, ret);
         detail::findOverlap(_other, *this, 0, true, ret);
         if (ret.count < 2)
@@ -1380,20 +1381,20 @@ namespace crunch
 
         if (ret.count != 2)
         {
-            return OverlapsResult();
+            return IntersectionResult();
         }
         else if (bStraightBoth)
         {
             // Straight pairs don't need further checks. If we found 2 pairs,
             // the end points on v1 & v2 should be the same.
-            BezierCubic o1 = slice(ret.values[0].x, ret.values[1].x);
-            BezierCubic o2 = _other.slice(ret.values[0].y, ret.values[1].y);
+            BezierCubic o1 = slice(ret.first[0].parameter, ret.first[1].parameter);
+            BezierCubic o2 = _other.slice(ret.second[0].parameter, ret.second[1].parameter);
             // Check if handles of the overlapping curves are the same too.
             if (abs(o2.m_handleOne.x - o1.m_handleOne.x) > geometricEpsilon ||
                     abs(o2.m_handleOne.y - o1.m_handleOne.y) > geometricEpsilon ||
                     abs(o2.m_handleTwo.x - o1.m_handleTwo.x) > geometricEpsilon ||
                     abs(o2.m_handleTwo.y - o1.m_handleTwo.y) > geometricEpsilon)
-                return OverlapsResult();
+                return IntersectionResult();
         }
 
         return ret;
@@ -1627,7 +1628,11 @@ namespace crunch
                 // We have isolated the intersection with sufficient precision
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
-                _outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
+                //_outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
+                if(_bFlip)
+                    _outResult.append(u, _b.positionAt(u), t, _a.positionAt(t));
+                else
+                    _outResult.append(t, _a.positionAt(t), u, _b.positionAt(u));
             }
             else
             {
@@ -1709,7 +1714,8 @@ namespace crunch
             {
                 for (stick::Int32 i = 0; i < 2; ++i)
                 {
-                    ret.values[ret.count++] = ol.values[i];
+                    ret.append(ol.first[i].parameter, ol.first[i].position,
+                        ol.second[i].parameter, ol.second[i].position);
                 }
             }
             else
@@ -1728,7 +1734,7 @@ namespace crunch
                     Line<VectorType> lineB = Line<VectorType>::fromPoints(_other.positionOne(), _other.positionTwo());
                     if (auto result = intersect(lineA, lineB))
                     {
-                        ret.values[ret.count++] = result.intersections()[0];
+                        ret.values[ret.count++] = Vec2f(parameterOf(result.intersections()[0]), _other.parameterOf(result.intersections()[0]));
                     }
                 }
                 else if (bStraight1 || bStraight2)
@@ -1800,6 +1806,9 @@ namespace crunch
         {
             printf("HANDLE BOUNDS DONT OVERELAP\n");
         }
+
+        // sort the intersections
+
 
         return ret;
     }
