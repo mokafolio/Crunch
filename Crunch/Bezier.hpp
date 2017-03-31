@@ -1755,6 +1755,7 @@ namespace crunch
                         auto t = a->parameterOf(b->m_pointOne);
                         if (t != -1)
                         {
+                            printf("GOT DA POINT!!!!!\n");
                             if (bFlip)
                                 ret.append(0, t, b->m_pointOne);
                             else

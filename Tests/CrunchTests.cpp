@@ -264,6 +264,15 @@ const Suite spec[] =
         EXPECT(isClose(res2.values[1].position, Vec2f(200, 139.19632), BezierCubic2f::geometricEpsilon));
         printf("%f %f %f %f\n", res2.values[0].parameterOne, res2.values[0].parameterTwo,
                res2.values[1].parameterOne, res2.values[1].parameterTwo);
+
+        // test the first curve / point case
+        BezierCubic2f e(Vec2f(190, 60), Vec2f(250, 60), Vec2f(250, 140), Vec2f(190, 140));
+        BezierCubic2f f(Vec2f(200, 60.80368), Vec2f(200, 60.80368), Vec2f(200, 60.80368), Vec2f(200, 60.80368));
+        auto res3 = e.intersections(f);
+        EXPECT(res3.count == 1);
+        EXPECT(isClose(res3.values[0].parameterOne, 0.05904f, BezierCubic2f::curveTimeEpsilon));
+        EXPECT(isClose(res3.values[0].parameterTwo, 0.0f, BezierCubic2f::curveTimeEpsilon));
+        EXPECT(isClose(res3.values[0].position, Vec2f(200, 60.80368), BezierCubic2f::curveTimeEpsilon));
         //EXPECT(isClose(res.values[0], Vec2f(200, 100), BezierCubic2f::geometricEpsilon));
     }
 };
