@@ -278,16 +278,22 @@ const Suite spec[] =
 
         // test the curve / curve case
         BezierCubic2d g(Vec2d(190, 60), Vec2d(250, 60), Vec2d(250, 140), Vec2d(190, 140));
-        BezierCubic2d h(Vec2d(240, 60), Vec2d(180, 60), Vec2d(180, 140), Vec2d(240, 140));
+        BezierCubic2d h(Vec2d(240, 60), Vec2d(210, 60), Vec2d(210, 140), Vec2d(240, 140));
         auto res4 = g.intersections(h);
+
+        printf("DA COUNT %lu\n", res4.count);
         EXPECT(res4.count == 2);
-        EXPECT(isClose(res4.values[0].parameterOne, 0.166416670, BezierCubic2d::curveTimeEpsilon));
-        EXPECT(isClose(res4.values[1].parameterOne, 0.833549463, BezierCubic2d::curveTimeEpsilon));
-        EXPECT(isClose(res4.values[0].position, Vec2d(214.999989636, 65.925920168), BezierCubic2d::geometricEpsilon));
-        EXPECT(isClose(res4.values[1].position, Vec2d(213.955114468, 134.635250310), BezierCubic2d::geometricEpsilon));
+        EXPECT(isClose(res4.values[0].parameterOne, 0.245412461, BezierCubic2d::curveTimeEpsilon));
+        EXPECT(isClose(res4.values[1].parameterOne, 0.754587539, BezierCubic2d::curveTimeEpsilon));
+        EXPECT(isClose(res4.values[0].position, Vec2d(223.33333, 72.08966), BezierCubic2d::geometricEpsilon));
+        EXPECT(isClose(res4.values[1].position, Vec2d(223.33333, 127.91034), BezierCubic2d::geometricEpsilon));
 
         printf("%0.9f %0.9f %0.9f %0.9f\n", res4.values[0].parameterOne, res4.values[0].parameterTwo,
                res4.values[1].parameterOne, res4.values[1].parameterTwo);
+
+        auto da = g.positionAt(res4.values[0].parameterTwo);
+        auto db = g.positionAt(res4.values[1].parameterTwo);
+        printf("%0.9f %0.9f %0.9f %0.9f\n", da.x, da.y, db.x, db.y);
 
         printf("DAAKSLJFKL %i %0.9f %0.9f\n", res4.count, res4.values[1].position.x, res4.values[1].position.y);
     }

@@ -1503,7 +1503,7 @@ namespace crunch
             }
 
             // Flip hull if dist1 is negative or if it is zero and dist2 is negative
-            if ((dist1 || dist2) < 0)
+            if (dist1 < 0 || (dist1 == 0 && dist2 < 0))
             {
                 std::swap(ret.top, ret.bottom);
             }
@@ -1579,7 +1579,7 @@ namespace crunch
 
             printf("START CUVE INTRE\n");
 
-            static auto fatLineEpsilon = BezierCubic<T>::fatLineEpsilon;
+            static ValueType fatLineEpsilon = BezierType::fatLineEpsilon;
 
             Line<VectorType> line = Line<VectorType>::fromPoints(_b.positionOne(), _b.positionTwo());
             ValueType d1 = line.signedDistance(_b.handleOne());
@@ -1603,6 +1603,7 @@ namespace crunch
             stick::Maybe<ValueType> tMinClip, tMaxClip;
             printf("%f %f %f %f\n", dp0, dp1, dp2, dp3);
             printf("DMIN %f DMAX %f\n", dMin, dMax);
+
             // Stop iteration if all points and control points are collinear.
             if ((d1 == 0 && d2 == 0
                     && dp0 == 0 && dp1 == 0 && dp2 == 0 && dp3 == 0)
@@ -1636,9 +1637,15 @@ namespace crunch
                 ValueType u = (_uMin + _uMax) / 2.0;
                 //_outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
                 if (_bFlip)
-                    _outResult.append(u, t, _a.positionAt(t));
+                {
+                    printf("DA FLIPPED\n");
+                    _outResult.append(u, t, _a.positionAt(u));
+                }
                 else
+                {
+                    printf("DA NORMAL\n");
                     _outResult.append(t, u, _a.positionAt(t));
+                }
             }
             else
             {
@@ -1819,6 +1826,8 @@ namespace crunch
                     else
                         detail::curveIntersections(*this, _other, ret, bFlip, 0, 0, 0, 1, 0, 1);
                 }
+
+                //@TODO: Add code to handle special case (see paper.js src)
             }
         }
         else
