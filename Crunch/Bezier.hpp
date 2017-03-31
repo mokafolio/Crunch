@@ -361,23 +361,20 @@ namespace crunch
         ClassificationResult<ValueType> classify() const;
 
         struct IntersectionResult
-        {   
+        {
             struct Intersection
             {
-                ValueType parameter;
+                ValueType parameterOne;
+                ValueType parameterTwo;
                 VectorType position;
             };
 
-            inline void append(ValueType _parameterOne, const VectorType & _positionOne,
-                ValueType _parameterTwo, const VectorType & _positionTwo)
+            inline void append(ValueType _parameterOne, ValueType _parameterTwo, const VectorType & _pos)
             {
-                first[count] = {_parameterOne, _positionOne};
-                second[count] = {_parameterTwo, _positionTwo};
-                count++;
+                values[count++] = {_parameterOne, _parameterTwo, _pos};
             }
 
-            Intersection first[9];
-            Intersection second[9];
+            Intersection values[9];
             stick::Int32 count = 0;
         };
 
@@ -1300,13 +1297,10 @@ namespace crunch
             if (t1 != -1)
             {
                 VectorType pair = _bFlip ? VectorType(t0, t1) : VectorType(t1, t0);
-                if (!_outResult.count || (abs(pair[0] - _outResult.first[0].parameter) > BezierCubic<T>::curveTimeEpsilon &&
-                                          abs(pair[1] - _outResult.second[0].parameter) > BezierCubic<T>::curveTimeEpsilon))
+                if (!_outResult.count || (abs(pair[0] - _outResult.values[0].parameterOne) > BezierCubic<T>::curveTimeEpsilon &&
+                                          abs(pair[1] - _outResult.values[0].parameterTwo) > BezierCubic<T>::curveTimeEpsilon))
                 {
-                    if(_bFlip)
-                        _outResult.append(t0, _a.positionAt(t0), t1, _b.positionAt(t1));
-                    else
-                        _outResult.append(t1, _b.positionAt(t1), t0, _a.positionAt(t0));
+                    _outResult.append(pair.x, pair.y, _aParameter ? _b.positionTwo() : _b.positionOne());
                 }
             }
         }
@@ -1387,8 +1381,8 @@ namespace crunch
         {
             // Straight pairs don't need further checks. If we found 2 pairs,
             // the end points on v1 & v2 should be the same.
-            BezierCubic o1 = slice(ret.first[0].parameter, ret.first[1].parameter);
-            BezierCubic o2 = _other.slice(ret.second[0].parameter, ret.second[1].parameter);
+            BezierCubic o1 = slice(ret.values[0].parameterOne, ret.values[1].parameterOne);
+            BezierCubic o2 = _other.slice(ret.values[0].parameterTwo, ret.values[1].parameterTwo);
             // Check if handles of the overlapping curves are the same too.
             if (abs(o2.m_handleOne.x - o1.m_handleOne.x) > geometricEpsilon ||
                     abs(o2.m_handleOne.y - o1.m_handleOne.y) > geometricEpsilon ||
@@ -1629,10 +1623,10 @@ namespace crunch
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
                 //_outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
-                if(_bFlip)
-                    _outResult.append(u, _b.positionAt(u), t, _a.positionAt(t));
+                if (_bFlip)
+                    _outResult.append(u, t, _a.positionAt(t));
                 else
-                    _outResult.append(t, _a.positionAt(t), u, _b.positionAt(u));
+                    _outResult.append(t, u, _a.positionAt(t));
             }
             else
             {
@@ -1714,8 +1708,8 @@ namespace crunch
             {
                 for (stick::Int32 i = 0; i < 2; ++i)
                 {
-                    ret.append(ol.first[i].parameter, ol.first[i].position,
-                        ol.second[i].parameter, ol.second[i].position);
+                    ret.append(ol.values[i].parameterOne, ol.values[i].parameterTwo,
+                               ol.values[i].position);
                 }
             }
             else
@@ -1734,7 +1728,7 @@ namespace crunch
                     Line<VectorType> lineB = Line<VectorType>::fromPoints(_other.positionOne(), _other.positionTwo());
                     if (auto result = intersect(lineA, lineB))
                     {
-                        ret.values[ret.count++] = Vec2f(parameterOf(result.intersections()[0]), _other.parameterOf(result.intersections()[0]));
+                        ret.append(parameterOf(result.intersections()[0]), _other.parameterOf(result.intersections()[0]), result.intersections()[0]);
                     }
                 }
                 else if (bStraight1 || bStraight2)
@@ -1761,7 +1755,10 @@ namespace crunch
                         auto t = a->parameterOf(b->m_pointOne);
                         if (t != -1)
                         {
-                            ret.values[ret.count++] = bFlip ? VectorType(0, t) : VectorType(t, 0);
+                            if(bFlip)
+                                ret.append(0, t, b->m_pointOne);
+                            else
+                                ret.append(t, 0, b->m_pointOne);
                         }
                     }
                     else
@@ -1786,8 +1783,12 @@ namespace crunch
 
                         for (stick::Int32 i = 0; i < roots.count; ++i)
                         {
-                            auto t2 = b->parameterOf(a->positionAt(roots.values[i]));
-                            ret.values[ret.count++] = bFlip ? VectorType(t2, roots.values[i]) : VectorType(roots.values[i], t2);
+                            auto pos = a->positionAt(roots.values[i]);
+                            auto t2 = b->parameterOf(pos);
+                            if(bFlip)
+                                ret.append(t2, roots.values[i], pos);
+                            else
+                                ret.append(roots.values[i], t2, pos);
                         }
                     }
                 }
