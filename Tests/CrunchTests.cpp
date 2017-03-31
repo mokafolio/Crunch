@@ -260,6 +260,8 @@ const Suite spec[] =
         EXPECT(res2.count == 2);
         EXPECT(isClose(res2.values[0].parameterOne, 0.05904f, BezierCubic2f::curveTimeEpsilon));
         EXPECT(isClose(res2.values[1].parameterOne, 0.94096f, BezierCubic2f::curveTimeEpsilon));
+        EXPECT(isClose(res2.values[0].position, Vec2f(200, 60.80368), BezierCubic2f::geometricEpsilon));
+        EXPECT(isClose(res2.values[1].position, Vec2f(200, 139.19632), BezierCubic2f::geometricEpsilon));
         printf("%f %f %f %f\n", res2.values[0].parameterOne, res2.values[0].parameterTwo,
                res2.values[1].parameterOne, res2.values[1].parameterTwo);
         //EXPECT(isClose(res.values[0], Vec2f(200, 100), BezierCubic2f::geometricEpsilon));
