@@ -1755,7 +1755,7 @@ namespace crunch
                         auto t = a->parameterOf(b->m_pointOne);
                         if (t != -1)
                         {
-                            if(bFlip)
+                            if (bFlip)
                                 ret.append(0, t, b->m_pointOne);
                             else
                                 ret.append(t, 0, b->m_pointOne);
@@ -1785,7 +1785,7 @@ namespace crunch
                         {
                             auto pos = a->positionAt(roots.values[i]);
                             auto t2 = b->parameterOf(pos);
-                            if(bFlip)
+                            if (bFlip)
                                 ret.append(t2, roots.values[i], pos);
                             else
                                 ret.append(roots.values[i], t2, pos);
@@ -1809,7 +1809,11 @@ namespace crunch
         }
 
         // sort the intersections
-
+        std::sort(&ret.values[0], &ret.values[0] + ret.count, [](const typename IntersectionResult::Intersection & _a,
+                  const typename IntersectionResult::Intersection & _b)
+        {
+            return _a.parameterOne < _b.parameterOne;
+        });
 
         return ret;
     }
