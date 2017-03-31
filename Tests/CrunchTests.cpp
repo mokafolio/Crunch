@@ -242,9 +242,19 @@ const Suite spec[] =
     },
     SUITE("Bezier::intersections Tests")
     {
-        BezierCubic2f a(Vec2f(100, 100), Vec2f(100, 100), Vec2f(300, 300), Vec2f(300, 300));
+        // test the straight case
+        BezierCubic2f a(Vec2f(100, 100), Vec2f(100, 100), Vec2f(300, 100), Vec2f(300, 100));
         BezierCubic2f b(Vec2f(200, 50), Vec2f(200, 50), Vec2f(200, 150), Vec2f(200, 150));
         auto res = a.intersections(b);
+        EXPECT(res.count == 1);
+        EXPECT(isClose(res.values[0], Vec2f(200, 100), BezierCubic2f::geometricEpsilon));
+
+        // test the first curve / line case
+        BezierCubic2f c(Vec2f(190, 60), Vec2f(250, 60), Vec2f(250, 140), Vec2f(190, 140));
+        BezierCubic2f d(Vec2f(200, 50), Vec2f(200, 50), Vec2f(200, 150), Vec2f(200, 150));
+        auto res2 = c.intersections(d);
+        EXPECT(res2.count == 2);
+        //EXPECT(isClose(res.values[0], Vec2f(200, 100), BezierCubic2f::geometricEpsilon));
     }
 };
 

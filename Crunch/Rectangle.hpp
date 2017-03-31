@@ -318,13 +318,17 @@ namespace crunch
     template<class T>
     bool Rectangle<T>::overlaps(const Rectangle & _other) const
     {
-        if (((m_min.x >= _other.m_min.x && m_min.x <= _other.m_max.x) ||
-                (_other.m_min.x >= m_min.x && _other.m_min.x <= m_max.x)) &&
-                ((m_min.y >= _other.m_min.y && m_min.y <= _other.m_max.y) ||
-                 (_other.m_min.y >= m_min.y && _other.m_min.y <= m_max.y)))
-        {
+        // if (((m_min.x >= _other.m_min.x && m_min.x <= _other.m_max.x) ||
+        //         (_other.m_min.x >= m_min.x && _other.m_min.x <= m_max.x)) &&
+        //         ((m_min.y >= _other.m_min.y && m_min.y <= _other.m_max.y) ||
+        //          (_other.m_min.y >= m_min.y && _other.m_min.y <= m_max.y)))
+        // {
+        //     return true;
+        // }
+
+        if(m_min.x < _other.m_max.x && m_max.x > _other.m_min.x &&
+            m_min.y < _other.m_max.y && m_max.y > _other.m_min.y)
             return true;
-        }
 
         return false;
     }

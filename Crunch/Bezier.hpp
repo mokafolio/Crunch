@@ -9,6 +9,7 @@
 #include <Crunch/UtilityFunc.hpp>
 #include <Crunch/Rectangle.hpp>
 #include <Crunch/NumericalFunc.hpp>
+#include <Crunch/TrigonometryFunc.hpp>
 
 namespace crunch
 {
@@ -665,7 +666,8 @@ namespace crunch
     template<class T>
     typename BezierCubic<T>::RectangleType BezierCubic<T>::handleBounds() const
     {
-        return RectangleType(min(m_handleOne, m_handleTwo), max(m_handleOne, m_handleTwo));
+        return RectangleType(min(m_pointOne, min(m_pointTwo, min(m_handleOne, m_handleTwo))),
+                             max(m_pointOne, max(m_pointTwo, max(m_handleOne, m_handleTwo))));
     }
 
     template<class T>
@@ -1669,7 +1671,7 @@ namespace crunch
                     {
                         // The interval on the other curve is already tight enough,
                         // therefore we keep iterating on the same curve.
-                        _calls = curveIntersections(sli, _b, _outResult, _bFlip,
+                        _calls = curveIntersections(sliced, _b, _outResult, _bFlip,
                                                     _recursion, _calls, tMinNew, tMaxNew, _uMin, _uMax);
                     }
                 }
@@ -1695,6 +1697,8 @@ namespace crunch
         // Avoid checking curves if completely out of control bounds.
         RectangleType myHandleBounds = handleBounds();
         RectangleType otherHandleBounds = _other.handleBounds();
+        printf("HANDE BOUNDS %s %s\n", toString(myHandleBounds.min()).cString(), toString(myHandleBounds.max()).cString());
+        printf("OTHER HANDE BOUNDS %s %s\n", toString(otherHandleBounds.min()).cString(), toString(otherHandleBounds.max()).cString());
         if (myHandleBounds.overlaps(otherHandleBounds))
         {
             // if we overlap, we are done.
@@ -1718,6 +1722,7 @@ namespace crunch
 
                 if (bStraightBoth)
                 {
+                    printf("BOTH STRAIGHT\n");
                     //find the intersection between the two line segments
                     Line<VectorType> lineA = Line<VectorType>::fromPoints(positionOne(), positionTwo());
                     Line<VectorType> lineB = Line<VectorType>::fromPoints(_other.positionOne(), _other.positionTwo());
@@ -1735,6 +1740,7 @@ namespace crunch
                      * and the curve.
                      */
 
+                    printf("ONE STRAIGHT\n");
                     //make sure a is always the curven and b the straight one
                     const BezierCubic * a = this;
                     const BezierCubic * b = &_other;
@@ -1743,6 +1749,7 @@ namespace crunch
                     Line<VectorType> line = Line<VectorType>::fromPoints(b->m_pointOne, b->m_pointTwo);
                     if (isClose(line.direction(), VectorType(0), epsilon))
                     {
+                        printf("POINT CHECK\n");
                         // Handle special case of a line with no direction as a point,
                         // and check if it is on the curve.
                         auto t = a->parameterOf(b->m_pointOne);
@@ -1753,17 +1760,22 @@ namespace crunch
                     }
                     else
                     {
+                        printf("ALIGN WITH LINE CHECK\n");
                         // Calculate angle to the x-axis (1, 0).
                         auto dir = line.direction();
                         ValueType angle = std::atan2(-dir.y, dir.x);
                         ValueType s = std::sin(angle);
                         ValueType c = std::cos(angle);
 
+                        printf("LINE ANGLE %f %f %f\n", toDegrees(angle), s, c);
+
                         VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.position(), s, c);
                         VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.position(), s, c);
                         VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.position(), s, c);
                         VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.position(), s, c);
                         BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
+
+                        printf("%s %s %s %s\n", toString(rotatedP1).cString(), toString(rotatedH1).cString(), toString(rotatedH2).cString(), toString(rotatedP2).cString());
                         auto roots = bez.solveCubic(0, false, 0, 1);
 
                         for (stick::Int32 i = 0; i < roots.count; ++i)
@@ -1775,13 +1787,18 @@ namespace crunch
                 }
                 else
                 {
+                    printf("BOTH CURVES BRAAA\n");
                     // fat line clipping for curve curve intersecting
-                    if(bFlip)
+                    if (bFlip)
                         detail::curveIntersections(_other, *this, ret, bFlip, 0, 0, 0, 1, 0, 1);
                     else
                         detail::curveIntersections(*this, _other, ret, bFlip, 0, 0, 0, 1, 0, 1);
                 }
             }
+        }
+        else
+        {
+            printf("HANDLE BOUNDS DONT OVERELAP\n");
         }
 
         return ret;
