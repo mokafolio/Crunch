@@ -374,6 +374,10 @@ namespace crunch
                 values[count++] = {_parameterOne, _parameterTwo, _pos};
             }
 
+            //Even though technically there can only be 9 intersections between two curves
+            //due to floating point inacuracies and the iterative approach with overlapping
+            //curves there might be more (false) ones. Hence we make this a dynamic array for
+            //now until we have a proper way of dealing with overlaps. @TODOOOO!!!1111
             Intersection values[9];
             stick::Int32 count = 0;
         };
@@ -383,6 +387,30 @@ namespace crunch
         IntersectionResult intersections(const BezierCubic & _other) const;
 
         void derivativeCoefficients(VectorType & _a, VectorType & _b, VectorType & _c) const;
+
+
+        struct Arc
+        {
+            bool isClockwise() const
+            {
+                return sweepAngle > 0;
+            }
+
+            VectorType center;
+            VectorType start;
+            VectorType end;
+            ValueType radius;
+            ValueType startAngle;
+            ValueType sweepAngle;
+        };
+
+        struct Biarc
+        {
+            Arc first;
+            Arc second;
+        };
+
+        void biarcs(stick::DynamicArray<Biarc> & _outArcs, ValueType _tolerance) const;
 
         static ValueType arcLength(ValueType _t, const VectorType & _a, const VectorType & _b, const VectorType & _c);
 
@@ -1843,6 +1871,139 @@ namespace crunch
         });
 
         return ret;
+    }
+
+    namespace detail
+    {
+        template<class T>
+        inline void biarcsImpl(const BezierCubic<T> & _bezier,
+                               stick::DynamicArray<typename BezierCubic<T>::Biarc> & _outArcs,
+                               typename BezierCubic<T>::ValueType _tolerance)
+        {
+            using ValueType = typename BezierCubic<T>::ValueType;
+            using VectorType = typename BezierCubic<T>::VectorType;
+            using ArcType = typename BezierCubic<T>::Arc;
+            using LineType = Line<VectorType>;
+
+            printf("BIARCS IMPL %f\n", _bezier.length());
+
+            VectorType aNorm = _bezier.normalAt(0);
+            VectorType bNorm = _bezier.normalAt(1.0);
+            VectorType mid = _bezier.positionAt(0.5);
+            VectorType midNorm = _bezier.normalAt(0.5);
+
+            LineType aLine(_bezier.positionOne(), aNorm);
+            LineType bLine(_bezier.positionTwo(), bNorm);
+
+            VectorType ah = mid - _bezier.positionOne();
+            VectorType amidStart = _bezier.positionOne() + ah * 0.5;
+            VectorType amidDir(-ah.y, ah.x);
+            LineType aMidLine(amidStart, amidDir);
+
+            printf("AMID START %s\n", toString(amidStart).cString());
+
+            VectorType bh = mid - _bezier.positionTwo();
+            VectorType bmidStart = _bezier.positionTwo() + bh * 0.5;
+            VectorType bmidDir(bh.y, -bh.x);
+            LineType bMidLine(bmidStart, bmidDir);
+
+            printf("BMID START %s\n", toString(bmidStart).cString());
+
+            auto ira = intersect(aLine, aMidLine);
+            auto irb = intersect(bLine, bMidLine);
+
+            STICK_ASSERT(ira && irb);
+            if (ira && irb)
+            {
+                ValueType radA = distance(ira.intersections()[0], _bezier.positionOne());
+                ValueType radB = distance(irb.intersections()[0], _bezier.positionTwo());
+
+                printf("RADII %f %f\n", radA, radB);
+
+                VectorType ta = ira.intersections()[0] - normalize(amidDir) * radA;
+                VectorType tb = irb.intersections()[0] - normalize(bmidDir) * radB;
+
+                printf("ta %s\n", toString(ta).cString());
+                printf("tb %s\n", toString(tb).cString());
+
+                ValueType distA = 0;
+                auto para = _bezier.closestParameter(ta, distA, 0.0, 1.0, 0.0);
+                ValueType distB = 0;
+                auto parb = _bezier.closestParameter(tb, distB, 0.0, 1.0, 0.0);
+                printf("pars %f %f\n", para, parb);
+                //ValueType distB = abs(radB - distance(tb, irb.intersections()[0]));
+
+                ValueType divergence = (distA + distB) * 0.5;
+
+                printf("TOLERANCE %f\n", _tolerance);
+                printf("GOT INTERSECTIONS %f %f %f\n", distA, distB, divergence);
+
+                if (divergence <= _tolerance)
+                {
+                    printf("GOT IIIIIIT\n");
+                    ArcType a = {ira.intersections()[0], _bezier.positionOne(), mid, radA, 0, 0};
+                    ArcType b = {irb.intersections()[0], mid, _bezier.positionTwo(), radB, 0, 0};
+                    _outArcs.append(
+                    {
+                        a,
+                        b
+                    });
+                }
+                else
+                {
+                    printf("SUBDIVIDEIT BRAA\n");
+                    auto pair = _bezier.subdivide(0.5);
+                    printf("START %s END %s\n", toString(pair.first.positionTwo()).cString(), toString(pair.second.positionOne()).cString());
+
+                    biarcsImpl(pair.first, _outArcs, _tolerance);
+                    biarcsImpl(pair.second, _outArcs, _tolerance);
+                }
+            }
+        }
+    }
+
+    template<class T>
+    void BezierCubic<T>::biarcs(stick::DynamicArray<typename BezierCubic<T>::Biarc> & _outArcs,
+                                typename BezierCubic<T>::ValueType _tolerance) const
+    {
+        /*// coeffs for calculating the inflection points based on:
+        // http://www.caffeineowl.com/graphics/2d/vectorial/cubic-inflexion.html
+        VectorType a = m_handleOne - m_pointOne;
+        VectorType b = m_handleTwo - m_handleOne - a;
+        VectorType c = m_pointTwo - m_handleTwo - a - b * 2;
+
+        auto resHor = solveQuadratic(a.x, b.x, c.x);
+        auto resVert = solveQuadratic(a.y, b.y, c.y);*/
+
+        ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
+        ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
+        ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
+
+        auto res = solveQuadratic(a1, a2, a3, curveTimeEpsilon, (ValueType)1.0 - curveTimeEpsilon);
+        if (res.count)
+        {
+            printf("INFLECTIONS: %i\n", res.count);
+
+            if (res.count == 1)
+            {
+                auto pair = subdivide(res.values[0]);
+                printf("FIRST\n");
+                detail::biarcsImpl(pair.first, _outArcs, _tolerance);
+                printf("SECOND\n");
+                detail::biarcsImpl(pair.second, _outArcs, _tolerance);
+            }
+            else
+            {
+                detail::biarcsImpl(slice(0, res.values[0]), _outArcs, _tolerance);
+                detail::biarcsImpl(slice(res.values[0], res.values[1]), _outArcs, _tolerance);
+                detail::biarcsImpl(slice(res.values[1], 1), _outArcs, _tolerance);
+            }
+        }
+        else
+        {
+            printf("NO INFLECTIONS\n");
+            detail::biarcsImpl(*this, _outArcs, _tolerance);
+        }
     }
 
     typedef BezierCubic<Vector2<stick::Float32> > BezierCubic2f;

@@ -350,6 +350,27 @@ const Suite spec[] =
         printf("%0.9f %0.9f\n", res4.values[0].position.x, res4.values[0].position.y);
 
         printf("DAAKSLJFKL %i %0.9f %0.9f\n", res4.count, res4.values[1].position.x, res4.values[1].position.y);
+    },
+    SUITE("Bezier::biarcs Tests")
+    {
+        BezierCubic2f loop(Vec2f(100, 200), Vec2f(110, 190), Vec2f(190, 190), Vec2f(200, 200));
+        stick::DynamicArray<typename BezierCubic2f::Biarc> biarcs;
+        loop.biarcs(biarcs, 0.1);
+        printf("NUMBER OF BIARCS! %lu\n", biarcs.count());
+        EXPECT(biarcs.first().first.start == loop.positionOne());
+        EXPECT(biarcs.last().second.end == loop.positionTwo());
+
+        printf("%f %f\n", loop.positionTwo().x, loop.positionTwo().y);
+        //printf("%f %f\n", biarcs.last().second.end.x, biarcs.last().second.end.y);
+
+        for(int i=0; i < biarcs.count(); ++i)
+        {
+            printf("%i\n", i);
+            printf("a %f %f\n", biarcs[i].first.start.x, biarcs[i].first.start.y);
+            printf("b %f %f\n", biarcs[i].first.end.x, biarcs[i].first.end.y);
+            printf("c %f %f\n", biarcs[i].second.start.x, biarcs[i].second.start.y);
+            printf("d %f %f\n", biarcs[i].second.end.x, biarcs[i].second.end.y);
+        }
     }
 };
 
