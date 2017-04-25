@@ -410,6 +410,8 @@ namespace crunch
             Arc second;
         };
 
+        SolveResult<ValueType> inflections(ValueType _minParameter = curveTimeEpsilon, ValueType _maxParameter = 1 - curveTimeEpsilon) const;
+
         void biarcs(stick::DynamicArray<Biarc> & _outArcs, ValueType _tolerance) const;
 
         static ValueType arcLength(ValueType _t, const VectorType & _a, const VectorType & _b, const VectorType & _c);
@@ -1960,6 +1962,26 @@ namespace crunch
                 }
             }
         }
+    }
+
+    template<class T>
+    SolveResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::inflections(ValueType _minParameter, ValueType _maxParameter) const
+    {
+        /*ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
+        ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
+        ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
+        ValueType d3 = 3 * a3;
+        ValueType d2 = d3 - a2;
+        ValueType d1 = d2 - a2 + a1;*/
+
+        VectorType av = m_handleOne - m_pointOne;
+        VectorType bv = m_handleTwo - m_handleOne - av;
+        VectorType cv = m_pointTwo - m_handleTwo - av - bv * 2;
+
+        ValueType a = av.x * bv.y - av.y * bv.x;
+        ValueType b = av.x * cv.y - av.y * cv.x;
+        ValueType c = bv.x * cv.y - bv.y * cv.x;
+        return solveQuadratic(c, b, a, _minParameter, _maxParameter);
     }
 
     template<class T>

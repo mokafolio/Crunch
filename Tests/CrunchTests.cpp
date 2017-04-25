@@ -354,6 +354,7 @@ const Suite spec[] =
     SUITE("Bezier::biarcs Tests")
     {
         BezierCubic2f loop(Vec2f(100, 200), Vec2f(110, 190), Vec2f(190, 190), Vec2f(200, 200));
+        //BezierCubic2f loop(Vec2f(100, 200), Vec2f(200, 100), Vec2f(100, 100), Vec2f(200, 200));
         stick::DynamicArray<typename BezierCubic2f::Biarc> biarcs;
         loop.biarcs(biarcs, 0.1);
         printf("NUMBER OF BIARCS! %lu\n", biarcs.count());
