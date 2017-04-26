@@ -1922,7 +1922,7 @@ namespace crunch
 
                 printf("RADII %f %f\n", radA, radB);
 
-                VectorType ta = ira.intersections()[0] - normalize(amidDir) * radA;
+                /*VectorType ta = ira.intersections()[0] - normalize(amidDir) * radA;
                 VectorType tb = irb.intersections()[0] - normalize(bmidDir) * radB;
 
                 printf("ta %s\n", toString(ta).cString());
@@ -1938,7 +1938,26 @@ namespace crunch
                 ValueType divergence = (distA + distB) * 0.5;
 
                 printf("TOLERANCE %f\n", _tolerance);
-                printf("GOT INTERSECTIONS %f %f %f\n", distA, distB, divergence);
+                printf("GOT INTERSECTIONS %f %f %f\n", distA, distB, divergence);*/
+
+                float divergence = 0.0f;
+                for (int i = 0; i < 10; i++)
+                {
+                    ValueType t = i * 0.1;
+                    auto p = _bezier.positionAt(t);
+                    if (t < 0.5)
+                    {
+                        auto d = distance(p, ira.intersections()[0]);
+                        divergence += abs(d - radA);
+                    }
+                    else
+                    {
+                        auto d = distance(p, irb.intersections()[0]);
+                        divergence += abs(d - radB);
+                    }
+                }
+
+                divergence *= 0.1;
 
                 if (divergence <= _tolerance)
                 {
@@ -1967,13 +1986,7 @@ namespace crunch
     template<class T>
     SolveResult<typename BezierCubic<T>::ValueType> BezierCubic<T>::inflections(ValueType _minParameter, ValueType _maxParameter) const
     {
-        /*ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
-        ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
-        ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
-        ValueType d3 = 3 * a3;
-        ValueType d2 = d3 - a2;
-        ValueType d1 = d2 - a2 + a1;*/
-
+        // http://www.caffeineowl.com/graphics/2d/vectorial/cubic-inflexion.html
         VectorType av = m_handleOne - m_pointOne;
         VectorType bv = m_handleTwo - m_handleOne - av;
         VectorType cv = m_pointTwo - m_handleTwo - av - bv * 2;
@@ -1988,24 +2001,12 @@ namespace crunch
     void BezierCubic<T>::biarcs(stick::DynamicArray<typename BezierCubic<T>::Biarc> & _outArcs,
                                 typename BezierCubic<T>::ValueType _tolerance) const
     {
-        /*// coeffs for calculating the inflection points based on:
-        // http://www.caffeineowl.com/graphics/2d/vectorial/cubic-inflexion.html
-        VectorType a = m_handleOne - m_pointOne;
-        VectorType b = m_handleTwo - m_handleOne - a;
-        VectorType c = m_pointTwo - m_handleTwo - a - b * 2;
+        auto res = inflections();
 
-        auto resHor = solveQuadratic(a.x, b.x, c.x);
-        auto resVert = solveQuadratic(a.y, b.y, c.y);*/
+        printf("INFLECTIONS: %i\n", res.count);
 
-        ValueType a1 = m_pointOne.x * (m_pointTwo.y - m_handleTwo.y) + m_pointOne.y * (m_handleTwo.x - m_pointTwo.x) + m_pointTwo.x * m_handleTwo.y - m_pointTwo.y * m_handleTwo.x;
-        ValueType a2 = m_handleOne.x * (m_pointOne.y - m_pointTwo.y) + m_handleOne.y * (m_pointTwo.x - m_pointOne.x) + m_pointOne.x * m_pointTwo.y - m_pointOne.y * m_pointTwo.x;
-        ValueType a3 = m_handleTwo.x * (m_handleOne.y - m_pointOne.y) + m_handleTwo.y * (m_pointOne.x - m_handleOne.x) + m_handleOne.x * m_pointOne.y - m_handleOne.y * m_pointOne.x;
-
-        auto res = solveQuadratic(a1, a2, a3, curveTimeEpsilon, (ValueType)1.0 - curveTimeEpsilon);
         if (res.count)
         {
-            printf("INFLECTIONS: %i\n", res.count);
-
             if (res.count == 1)
             {
                 auto pair = subdivide(res.values[0]);
