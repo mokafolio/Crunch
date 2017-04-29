@@ -2,7 +2,7 @@
 #define CRUNCH_BEZIER_HPP
 
 #include <Stick/DynamicArray.hpp>
-#include <Stick/Maybe.hpp>
+#include <Stick/Variant.hpp>
 #include <Crunch/Line.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/CommonFunc.hpp>
@@ -352,7 +352,7 @@ namespace crunch
          *
          * @param _epsilon An epsilon value that changes the tolerance of the internal calculation.
          */
-        bool isLinear(ValueType _epsilon = epsilon) const;
+        bool isLinear(ValueType _epsilon = geometricEpsilon) const;
 
         bool isStraight() const;
 
@@ -410,9 +410,18 @@ namespace crunch
             Arc second;
         };
 
+        struct PointPair
+        {
+            VectorType first;
+            VectorType second;
+        };
+
+        using BiarcResult = stick::Variant<Biarc, PointPair>;
+        using BiarcResultArray = stick::DynamicArray<BiarcResult>;
+
         SolveResult<ValueType> inflections(ValueType _minParameter = curveTimeEpsilon, ValueType _maxParameter = 1 - curveTimeEpsilon) const;
 
-        void biarcs(stick::DynamicArray<Biarc> & _outArcs, ValueType _tolerance) const;
+        void biarcs(BiarcResultArray & _outArcs, ValueType _tolerance) const;
 
         static ValueType arcLength(ValueType _t, const VectorType & _a, const VectorType & _b, const VectorType & _c);
 
@@ -1152,7 +1161,7 @@ namespace crunch
         if (isClose(line, VectorType(0)))
             return false;
 
-        if (isCollinear(handleOne(), line) && isCollinear(handleTwo(), line))
+        if (isCollinear(handleOne(), line, geometricEpsilon) && isCollinear(handleTwo(), line, geometricEpsilon))
         {
             // Collinear handles. Project them onto line to see if they are
             // within the line's range:
@@ -1879,12 +1888,13 @@ namespace crunch
     {
         template<class T>
         inline void biarcsImpl(const BezierCubic<T> & _bezier,
-                               stick::DynamicArray<typename BezierCubic<T>::Biarc> & _outArcs,
+                               typename BezierCubic<T>::BiarcResultArray & _outArcs,
                                typename BezierCubic<T>::ValueType _tolerance)
         {
             using ValueType = typename BezierCubic<T>::ValueType;
             using VectorType = typename BezierCubic<T>::VectorType;
             using ArcType = typename BezierCubic<T>::Arc;
+            using BiarcType = typename BezierCubic<T>::Biarc;
             using LineType = Line<VectorType>;
 
             printf("BIARCS IMPL %f\n", _bezier.length());
@@ -1962,13 +1972,33 @@ namespace crunch
                 if (divergence <= _tolerance)
                 {
                     printf("GOT IIIIIIT\n");
-                    ArcType a = {ira.intersections()[0], _bezier.positionOne(), mid, radA, 0, 0};
-                    ArcType b = {irb.intersections()[0], mid, _bezier.positionTwo(), radB, 0, 0};
-                    _outArcs.append(
-                    {
-                        a,
-                        b
-                    });
+
+                    bool cw = _bezier.area() >= 0;
+                    auto va = _bezier.positionOne() - ira.intersections()[0];
+                    auto va2 = mid - ira.intersections()[0];
+
+                    auto astart = std::atan2(va.y, va.x);
+                    auto asweep = std::atan2(va2.y, va2.x) - astart;
+
+                    auto vb = mid - irb.intersections()[0];
+                    auto vb2 = _bezier.positionTwo() - irb.intersections()[0];
+                    auto bstart = std::atan2(vb.y, vb.x);
+                    auto bsweep = std::atan2(vb2.y, vb2.x) - astart;
+
+                    // Adjust angles according to the orientation of the curve
+                    if (cw && asweep < 0) asweep = Constants<ValueType>::twoPi() + asweep;
+                    if (!cw && asweep > 0) asweep = asweep - Constants<ValueType>::twoPi();
+                    if (cw && bsweep < 0) bsweep = Constants<ValueType>::twoPi() + bsweep;
+                    if (!cw && bsweep > 0) bsweep = bsweep - Constants<ValueType>::twoPi();
+
+                    printf("CW: %d\n", cw);
+                    printf("START ANGLE %f SWEEP %f\n", toDegrees(astart), toDegrees(asweep));
+                    printf("START ANGLE2 %f SWEEP2 %f\n", toDegrees(bstart), toDegrees(bsweep));
+
+                    ArcType a = {ira.intersections()[0], _bezier.positionOne(), mid, radA, astart, asweep};
+                    ArcType b = {irb.intersections()[0], mid, _bezier.positionTwo(), radB, bstart, bsweep};
+
+                    _outArcs.append((BiarcType) {a, b});
                 }
                 else
                 {
@@ -1998,9 +2028,16 @@ namespace crunch
     }
 
     template<class T>
-    void BezierCubic<T>::biarcs(stick::DynamicArray<typename BezierCubic<T>::Biarc> & _outArcs,
-                                typename BezierCubic<T>::ValueType _tolerance) const
+    void BezierCubic<T>::biarcs(BiarcResultArray & _outArcs,
+                                ValueType _tolerance) const
     {
+        //for straight beziers, we simply return the two endpoints
+        if(isStraight())
+        {
+            _outArcs.append((PointPair){m_pointOne, m_pointTwo});
+            return;
+        }
+
         auto res = inflections();
 
         printf("INFLECTIONS: %i\n", res.count);

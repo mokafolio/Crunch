@@ -355,22 +355,23 @@ const Suite spec[] =
     {
         BezierCubic2f loop(Vec2f(100, 200), Vec2f(110, 190), Vec2f(190, 190), Vec2f(200, 200));
         //BezierCubic2f loop(Vec2f(100, 200), Vec2f(200, 100), Vec2f(100, 100), Vec2f(200, 200));
-        stick::DynamicArray<typename BezierCubic2f::Biarc> biarcs;
+        BezierCubic2f::BiarcResultArray biarcs;
         loop.biarcs(biarcs, 0.1);
         printf("NUMBER OF BIARCS! %lu\n", biarcs.count());
-        EXPECT(biarcs.first().first.start == loop.positionOne());
-        EXPECT(biarcs.last().second.end == loop.positionTwo());
+        EXPECT(biarcs.first().get<BezierCubic2f::Biarc>()->first.start == loop.positionOne());
+        EXPECT(biarcs.last().get<BezierCubic2f::Biarc>()->second.end == loop.positionTwo());
 
         printf("%f %f\n", loop.positionTwo().x, loop.positionTwo().y);
         //printf("%f %f\n", biarcs.last().second.end.x, biarcs.last().second.end.y);
 
         for(int i=0; i < biarcs.count(); ++i)
         {
+            auto biarc = *biarcs[i].get<BezierCubic2f::Biarc>();
             printf("%i\n", i);
-            printf("a %f %f\n", biarcs[i].first.start.x, biarcs[i].first.start.y);
-            printf("b %f %f\n", biarcs[i].first.end.x, biarcs[i].first.end.y);
-            printf("c %f %f\n", biarcs[i].second.start.x, biarcs[i].second.start.y);
-            printf("d %f %f\n", biarcs[i].second.end.x, biarcs[i].second.end.y);
+            printf("a %f %f\n", biarc.first.start.x, biarc.first.start.y);
+            printf("b %f %f\n", biarc.first.end.x, biarc.first.end.y);
+            printf("c %f %f\n", biarc.second.start.x, biarc.second.start.y);
+            printf("d %f %f\n", biarc.second.end.x, biarc.second.end.y);
         }
     }
 };
