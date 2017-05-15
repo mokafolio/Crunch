@@ -431,6 +431,12 @@ namespace crunch
 
         return greatestCommonDivisor(_b, _a % _b);
     }
+
+    template<class T>
+    inline T mapRange(T _value, T _low1, T _high1, T _low2, T _high2)
+    {
+        return _low2 + (_high2 - _low2) * (_value - _low1) / (_high1 - _low1);
+    }
 }
 
 #endif //CRUNCH_COMMONFUNC_HPP
