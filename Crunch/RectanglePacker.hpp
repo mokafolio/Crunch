@@ -62,6 +62,8 @@ namespace crunch
 
         PlacementResult placeRectangle(const RectangleType & _rect);
 
+        stick::Error freeRectangle(const RectangleType & _rect);
+
         void reset(stick::UInt32 _startWidth, stick::UInt32 _startHeight);
 
         stick::Float32 maxWidth() const;
@@ -306,6 +308,16 @@ namespace crunch
         while (!result);
 
         return result;
+    }
+
+    template<class T>
+    stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
+    {
+        RectangleType mergedRect;
+        for(auto & rect : m_freeRects)
+        {
+
+        }
     }
 
     template<class T>

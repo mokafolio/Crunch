@@ -325,6 +325,19 @@ namespace crunch
     }
 
     /**
+     * @brief Rotates a 2D vector by an angle in radians around a point.
+     */
+    template<class T>
+    inline Vector2<T> rotate(const Vector2<T> & _a, const Vector2<T> & _point, T _radians)
+    {
+        T c = std::cos(_radians);
+        T s = std::sin(_radians);
+        T dx = _a.x - _point.x;
+        T dy = _point.y - _a.y;
+        return Vector2<T>(dx * c - dy * s + _point.x, dx * s + dy * c + _point.y);
+    }
+
+    /**
      * @brief Returns true if the directions of the two provided vectors are colinear (on the same line).
      * @param _a The first vector.
      * @param _b The second vector.

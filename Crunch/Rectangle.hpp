@@ -19,7 +19,8 @@ namespace crunch
         /**
          * @brief Type that describes a point.
          */
-        typedef Vector2<T> Point;
+        using Point = Vector2<T>;
+        using VectorType = Point;
 
         /**
          * @brief Default Constructor.
@@ -186,6 +187,26 @@ namespace crunch
         Point & max();
 
         /**
+         * @brief Returns the top left of the rectangle.
+         */
+        Point topLeft() const;
+
+        /**
+         * @brief Returns the top right of the rectangle.
+         */
+        Point topRight() const;
+
+        /**
+         * @brief Returns the top left of the rectangle.
+         */
+        Point bottomRight() const;
+
+        /**
+         * @brief Returns the top right of the rectangle.
+         */
+        Point bottomLeft() const;
+
+        /**
          * @brief Returns the center of the rectangle.
          */
         Point center() const;
@@ -326,8 +347,8 @@ namespace crunch
         //     return true;
         // }
 
-        if(m_min.x < _other.m_max.x && m_max.x > _other.m_min.x &&
-            m_min.y < _other.m_max.y && m_max.y > _other.m_min.y)
+        if (m_min.x < _other.m_max.x && m_max.x > _other.m_min.x &&
+                m_min.y < _other.m_max.y && m_max.y > _other.m_min.y)
             return true;
 
         return false;
@@ -465,6 +486,30 @@ namespace crunch
     typename Rectangle<T>::Point Rectangle<T>::center() const
     {
         return min() + size() * 0.5;
+    }
+
+    template<class T>
+    typename Rectangle<T>::Point Rectangle<T>::topLeft() const
+    {
+        return min();
+    }
+
+    template<class T>
+    typename Rectangle<T>::Point Rectangle<T>::topRight() const
+    {
+        return min() + VectorType(width(), 0);
+    }
+
+    template<class T>
+    typename Rectangle<T>::Point Rectangle<T>::bottomRight() const
+    {
+        return max();
+    }
+
+    template<class T>
+    typename Rectangle<T>::Point Rectangle<T>::bottomLeft() const
+    {
+        return min() + VectorType(0, height());
     }
 
     //free function implementations

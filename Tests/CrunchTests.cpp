@@ -281,7 +281,7 @@ const Suite spec[] =
         BezierCubic2d h(Vec2d(240, 80), Vec2d(210, 80), Vec2d(210, 120), Vec2d(240, 120));
         auto res4 = g.intersections(h);
 
-        printf("DA COUNT %lu\n", res4.count);
+        printf("DA COUNT %i\n", res4.count);
         EXPECT(res4.count == 2);
         EXPECT(isClose(res4.values[0].parameterOne, 0.341340029547, BezierCubic2d::curveTimeEpsilon));
         EXPECT(isClose(res4.values[1].parameterOne, 0.658659970453, BezierCubic2d::curveTimeEpsilon));
@@ -358,15 +358,15 @@ const Suite spec[] =
         BezierCubic2f::BiarcResultArray biarcs;
         loop.biarcs(biarcs, 0.1);
         printf("NUMBER OF BIARCS! %lu\n", biarcs.count());
-        EXPECT(biarcs.first().get<BezierCubic2f::Biarc>()->first.start == loop.positionOne());
-        EXPECT(biarcs.last().get<BezierCubic2f::Biarc>()->second.end == loop.positionTwo());
+        EXPECT(biarcs.first().get<BezierCubic2f::Biarc>().first.start == loop.positionOne());
+        EXPECT(biarcs.last().get<BezierCubic2f::Biarc>().second.end == loop.positionTwo());
 
         printf("%f %f\n", loop.positionTwo().x, loop.positionTwo().y);
         //printf("%f %f\n", biarcs.last().second.end.x, biarcs.last().second.end.y);
 
         for(int i=0; i < biarcs.count(); ++i)
         {
-            auto biarc = *biarcs[i].get<BezierCubic2f::Biarc>();
+            auto biarc = biarcs[i].get<BezierCubic2f::Biarc>();
             printf("%i\n", i);
             printf("a %f %f\n", biarc.first.start.x, biarc.first.start.y);
             printf("b %f %f\n", biarc.first.end.x, biarc.first.end.y);
