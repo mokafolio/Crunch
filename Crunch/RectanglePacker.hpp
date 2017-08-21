@@ -74,7 +74,9 @@ namespace crunch
 
         stick::Float32 currentHeight() const;
 
-    private:
+        stick::Size freeRectangleCount() const;
+
+        // private:
 
         PlacementResult placeRectangleHelper(const RectangleType & _rect);
 
@@ -188,24 +190,63 @@ namespace crunch
                 //check if the intersect
                 if ((*it).overlaps(positionedRect))
                 {
+                    printf("OVERLAP\n");
                     if ((*it).min().x < positionedRect.min().x)
                     {
-                        newRects.append(RectangleType((*it).min(), PositionType(positionedRect.min().x, (*it).max().y)));
+                        printf("A\n");
+                        auto r = RectangleType((*it).min(), PositionType(positionedRect.min().x, (*it).max().y));
+                        for (auto & rect : newRects)
+                        {
+                            if (r.overlaps(rect))
+                            {
+                                r.max().y = rect.min().y;
+                            }
+                        }
+                        newRects.append(r);
                     }
 
                     if ((*it).max().x > positionedRect.max().x)
                     {
-                        newRects.append(RectangleType(PositionType(positionedRect.max().x, (*it).min().y), (*it).max()));
+                        printf("B\n");
+                        auto r = RectangleType(PositionType(positionedRect.max().x, (*it).min().y), (*it).max());
+                        for (auto & rect : newRects)
+                        {
+                            if (r.overlaps(rect))
+                            {
+                                printf("ASKJALKSGJ\n");
+                                r.min().y = rect.max().y;
+                            }
+                        }
+                        newRects.append(r);
                     }
 
                     if ((*it).min().y < positionedRect.min().y)
                     {
-                        newRects.append(RectangleType((*it).min(), PositionType((*it).max().x, positionedRect.min().y)));
+                        printf("C\n");
+                        auto r = RectangleType((*it).min(), PositionType((*it).max().x, positionedRect.min().y));
+                        for (auto & rect : newRects)
+                        {
+                            if (r.overlaps(rect))
+                            {
+                                r.min().x = rect.max().x;
+                            }
+                        }
+                        newRects.append(r);
                     }
 
                     if ((*it).max().y > positionedRect.max().y)
                     {
-                        newRects.append(RectangleType(PositionType((*it).min().x, positionedRect.max().y), (*it).max()));
+                        printf("D\n");
+                        auto r = RectangleType(PositionType((*it).min().x, positionedRect.max().y), (*it).max());
+                        for (auto & rect : newRects)
+                        {
+                            if (r.overlaps(rect))
+                            {
+                                printf("ASKJALKSGJ\n");
+                                r.max().x = rect.min().x;
+                            }
+                        }
+                        newRects.append(r);
                     }
                     it = m_freeRects.remove(it);
                 }
@@ -229,16 +270,25 @@ namespace crunch
                         {
                             if ((*tit).contains(*sit))
                             {
+                                printf("CONTAAAINS\n");
                                 bIsContained = true;
                                 break;
                             }
                         }
                     }
+
                     if (!bIsContained)
+                    {
                         final.append(*sit);
+                    }
                 }
 
+                //last pass to remove overlaps between new rectangles
+
+
                 m_freeRects.insert(m_freeRects.end(), final.begin(), final.end());
+                // for(auto rect : final)
+                //     freeRectangle(rect);
             }
 
             return positionedRect;
@@ -317,28 +367,37 @@ namespace crunch
     {
         for (auto it = m_freeRects.begin(); it != m_freeRects.end(); ++it)
         {
-            if (((*it).topRight() == _rect.topLeft() && (*it).bottomRight() == _rect.bottomLeft())  ||
-                    ((*it).topLeft() == _rect.topRight() && (*it).bottomLeft() == _rect.bottomRight()) ||
-                    ((*it).bottomLeft() == _rect.topLeft() && (*it).bottomRight() == _rect.topRight()) ||
-                    ((*it).topLeft() == _rect.bottomLeft() && (*it).topRight() == _rect.bottomRight()))
+            if ((crunch::isClose((*it).topRight(), _rect.topLeft()) && crunch::isClose((*it).bottomRight(), _rect.bottomLeft()))  ||
+                    (crunch::isClose((*it).topLeft(), _rect.topRight()) && crunch::isClose((*it).bottomLeft(), _rect.bottomRight())) ||
+                    (crunch::isClose((*it).bottomLeft(), _rect.topLeft()) && crunch::isClose((*it).bottomRight(), _rect.topRight())) ||
+                    (crunch::isClose((*it).topLeft(), _rect.bottomLeft()) && crunch::isClose((*it).topRight(), _rect.bottomRight())))
             {
-                auto currentRect = _rect.merge(*it);
+                auto currentRect = crunch::merge(*it, _rect);
+                printf("MERGIN DA RECTS\n");
                 m_freeRects.remove(it);
                 return currentRect;
             }
         }
+        printf("WADDDUUUP PIIIMPS\n");
         m_freeRects.append(_rect);
+        printf("WADDDUUUP PIIIMPS 2\n");
         return stick::Maybe<RectangleType>();
     }
 
     template<class T>
     stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
     {
+        // for(auto & rect : m_freeRects)
+        // {
+        //     STICK_ASSERT(!_rect.contains(rect));
+        // }
         auto mergedRect = freeRectangleHelper(_rect);
-        while(mergedRect)
+        while (mergedRect)
         {
+            printf("WAJKHAJGSHJKAS\n");
             mergedRect = freeRectangleHelper(*mergedRect);
         }
+        return stick::Error();
     }
 
     template<class T>
@@ -363,6 +422,12 @@ namespace crunch
     stick::Float32 RectanglePackerT<T>::currentHeight() const
     {
         return m_currentHeight;
+    }
+
+    template<class T>
+    stick::Size RectanglePackerT<T>::freeRectangleCount() const
+    {
+        return m_freeRects.count();
     }
 
     typedef RectanglePackerT<stick::Float32> RectanglePacker;

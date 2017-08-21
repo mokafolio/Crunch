@@ -320,7 +320,7 @@ namespace crunch
     template<class T>
     bool Rectangle<T>::contains(const Rectangle & _other) const
     {
-        return (contains(_other.min()) && contains(_other.max()));
+        return contains(_other.min()) && contains(_other.max());
     }
 
     template<class T>
