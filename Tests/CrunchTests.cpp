@@ -125,8 +125,9 @@ const Suite spec[] =
         for (int i = 0; i < 10; ++i)
         {
             Rectangle<Float32> rect(0, 0, rand.randomf(2, 10), rand.randomf(2, 10));
-            rects.append(rect);
-            EXPECT(packer2.placeRectangle(rect));
+            auto res = packer2.placeRectangle(rect);
+            rects.append(res.get());
+            EXPECT(res);
         }
 
         for(auto rect : rects)
@@ -135,7 +136,7 @@ const Suite spec[] =
         }
 
         printf("packer2.freeRectangleCount() %lu\n", packer2.freeRectangleCount());
-        // EXPECT(packer2.freeRectangleCount() == 1);
+        EXPECT(packer2.freeRectangleCount() == 1);
     },
     SUITE("Line Tests")
     {

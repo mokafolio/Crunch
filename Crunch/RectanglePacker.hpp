@@ -378,19 +378,20 @@ namespace crunch
                 return currentRect;
             }
         }
-        printf("WADDDUUUP PIIIMPS\n");
         m_freeRects.append(_rect);
-        printf("WADDDUUUP PIIIMPS 2\n");
         return stick::Maybe<RectangleType>();
     }
 
     template<class T>
     stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
     {
-        // for(auto & rect : m_freeRects)
-        // {
-        //     STICK_ASSERT(!_rect.contains(rect));
-        // }
+        for(auto & rect : m_freeRects)
+        {
+            if(rect.overlaps(_rect))
+            {
+                printf("THEY OVERLAP %f %f %f %f, %f %f %f %f\n", rect.min().x, rect.min().y, rect.width(), rect.height(), _rect.min().x, _rect.min().y, _rect.width(), _rect.height());
+            }
+        }
         auto mergedRect = freeRectangleHelper(_rect);
         while (mergedRect)
         {
