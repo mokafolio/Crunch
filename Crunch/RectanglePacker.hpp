@@ -78,6 +78,8 @@ namespace crunch
 
         PlacementResult placeRectangleHelper(const RectangleType & _rect);
 
+        stick::Maybe<RectangleType> freeRectangleHelper(const RectangleType & _rect);
+
         RectangleArray m_freeRects;
         bool m_bPowerOfTwo;
         stick::UInt32 m_maxWidth;
@@ -311,12 +313,31 @@ namespace crunch
     }
 
     template<class T>
+    stick::Maybe<typename RectanglePackerT<T>::RectangleType> RectanglePackerT<T>::freeRectangleHelper(const RectangleType & _rect)
+    {
+        for (auto it = m_freeRects.begin(); it != m_freeRects.end(); ++it)
+        {
+            if (((*it).topRight() == _rect.topLeft() && (*it).bottomRight() == _rect.bottomLeft())  ||
+                    ((*it).topLeft() == _rect.topRight() && (*it).bottomLeft() == _rect.bottomRight()) ||
+                    ((*it).bottomLeft() == _rect.topLeft() && (*it).bottomRight() == _rect.topRight()) ||
+                    ((*it).topLeft() == _rect.bottomLeft() && (*it).topRight() == _rect.bottomRight()))
+            {
+                auto currentRect = _rect.merge(*it);
+                m_freeRects.remove(it);
+                return currentRect;
+            }
+        }
+        m_freeRects.append(_rect);
+        return stick::Maybe<RectangleType>();
+    }
+
+    template<class T>
     stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
     {
-        RectangleType mergedRect;
-        for(auto & rect : m_freeRects)
+        auto mergedRect = freeRectangleHelper(_rect);
+        while(mergedRect)
         {
-
+            mergedRect = freeRectangleHelper(*mergedRect);
         }
     }
 
