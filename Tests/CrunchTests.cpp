@@ -79,43 +79,24 @@ const Suite spec[] =
         RectanglePacker packer;
         packer.setMaxSize(0, 0);
         packer.reset(5, 5);
-        printf("A\n");
         EXPECT(!packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
         packer.setMaxSize(20, 20);
-        packer.reset(20, 20);
+        packer.reset(20, 200);
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
-        printf("packer2.freeRectangleCount() %lu\n", packer.freeRectangleCount());
         EXPECT(packer.freeRectangleCount() == 2);
-        for (auto _rect : packer.m_freeRects)
-        {
-            printf("FREE RECT %s %f %f\n", crunch::toString(_rect.min()).cString(), _rect.width(), _rect.height());
-        }
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
-        printf("packer2.freeRectangleCount() %lu\n", packer.freeRectangleCount());
         EXPECT(packer.freeRectangleCount() == 1);
-        for (auto _rect : packer.m_freeRects)
-        {
-            printf("FREE RECT %s %f %f\n", crunch::toString(_rect.min()).cString(), _rect.width(), _rect.height());
-        }
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
-        printf("packer2.freeRectangleCount() %lu\n", packer.freeRectangleCount());
         EXPECT(packer.freeRectangleCount() == 1);
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
-        printf("packer2.freeRectangleCount() %lu\n", packer.freeRectangleCount());
         EXPECT(packer.freeRectangleCount() == 2);
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
-        printf("packer2.freeRectangleCount() %lu\n", packer.freeRectangleCount());
         EXPECT(packer.freeRectangleCount() == 1);
-        for (auto _rect : packer.m_freeRects)
-        {
-            printf("FREE RECT %s %f %f\n", crunch::toString(_rect.min()).cString(), _rect.width(), _rect.height());
-        }
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
         EXPECT(packer.freeRectangleCount() == 1);
         EXPECT(!packer.placeRectangle(Rectangle<Float32>(0, 0, 10, 10)));
         EXPECT(packer.placeRectangle(Rectangle<Float32>(0, 0, 5, 5)));
         EXPECT(packer.freeRectangleCount() == 0);
-        printf("B\n");
 
         RectanglePacker packer2;
         packer2.reset(1000, 1000);
@@ -130,12 +111,11 @@ const Suite spec[] =
             EXPECT(res);
         }
 
-        for(auto rect : rects)
+        for (auto rect : rects)
         {
             packer2.freeRectangle(rect);
         }
 
-        printf("packer2.freeRectangleCount() %lu\n", packer2.freeRectangleCount());
         EXPECT(packer2.freeRectangleCount() == 1);
     },
     SUITE("Line Tests")
@@ -380,8 +360,8 @@ const Suite spec[] =
         EXPECT(isClose(res4.values[0].position, Vec2f(230.46886, 81.59983), BezierCubic2f::geometricEpsilon));
         EXPECT(isClose(res4.values[1].position, Vec2f(230.46886, 118.40017), BezierCubic2f::geometricEpsilon));
 
-        printf("%0.9f %0.9f %0.9f %0.9f\n", res4.values[0].parameterOne, res4.values[0].parameterTwo,
-               res4.values[1].parameterOne, res4.values[1].parameterTwo);
+        // printf("%0.9f %0.9f %0.9f %0.9f\n", res4.values[0].parameterOne, res4.values[0].parameterTwo,
+        //        res4.values[1].parameterOne, res4.values[1].parameterTwo);
 
         auto da = g.positionAt(res4.values[0].parameterOne);
         auto db = g.positionAt(res4.values[1].parameterOne);

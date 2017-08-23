@@ -90,15 +90,6 @@ namespace crunch
         stick::UInt32 m_currentHeight;
     };
 
-    /*namespace detail
-    {
-        template<class T>
-        inline bool sortRectsByHeight(const Rectangle<T> & _a, const Rectangle<T> & _b)
-        {
-            return _a.height() > _b.height();
-        }
-    }*/
-
     template<class T>
     RectanglePackerT<T>::RectanglePackerT(stick::Allocator & _alloc) :
         m_freeRects(_alloc),
@@ -148,152 +139,64 @@ namespace crunch
     template<class T>
     typename RectanglePackerT<T>::PlacementResult RectanglePackerT<T>::placeRectangleHelper(const RectangleType & _rect)
     {
-        bool bFoundFittingRect = false;
-        stick::Size bestRectIndex = 0;
+        stick::Size bestRectIndex = -1;
         ValueType bestX = std::numeric_limits<ValueType>::max();
+        ValueType diffX = -std::numeric_limits<ValueType>::max();
+        ValueType diffY = -std::numeric_limits<ValueType>::max();
 
         for (stick::Size i = 0; i < m_freeRects.count(); ++i)
         {
-            ValueType diffX = m_freeRects[i].width() - _rect.width();
-            ValueType diffY = m_freeRects[i].height() - _rect.height();
+            ValueType dx = m_freeRects[i].width() - _rect.width();
+            ValueType dy = m_freeRects[i].height() - _rect.height();
 
-            if (diffX >= 0 && diffY >= 0)
+            if (dx >= 0 && dy >= 0)
             {
                 if (m_freeRects[i].min().x < bestX)
                 {
                     bestX = m_freeRects[i].min().x;
                     bestRectIndex = i;
-                    bFoundFittingRect = true;
+                    diffX = dx;
+                    diffY = dy;
                     if (bestX == 0)
                         break;
                 }
             }
-            /*else if (diffX == 0 && diffY == 0)
-            {
-                bFoundFittingRect = true;
-                bestRectIndex = i;
-                break;
-            }*/
         }
 
-        if (bFoundFittingRect)
+        if (bestRectIndex != (stick::Size) - 1)
         {
-            RectangleType positionedRect(m_freeRects[bestRectIndex].min(),
-                                         m_freeRects[bestRectIndex].min() + _rect.size());
+            auto br = m_freeRects[bestRectIndex];
+            RectangleType positionedRect(br.min(),
+                                         br.min() + _rect.size());
+            m_freeRects.remove(m_freeRects.begin() + bestRectIndex);
 
-            //check with which existing free rects the new positioned rect intersects
             RectangleArray newRects;
-            newRects.reserve(m_freeRects.count());
-            auto it = m_freeRects.begin();
-            for (; it != m_freeRects.end();)
+            newRects.reserve(2);
+            if (diffY > 0)
             {
-                //check if the intersect
-                if ((*it).overlaps(positionedRect))
+                newRects.append(RectangleType(PositionType(br.min().x, positionedRect.max().y), br.max()));
+            }
+
+            if (diffX > 0)
+            {
+                if (diffX > 0)
                 {
-                    printf("OVERLAP\n");
-                    if ((*it).min().x < positionedRect.min().x)
-                    {
-                        printf("A\n");
-                        auto r = RectangleType((*it).min(), PositionType(positionedRect.min().x, (*it).max().y));
-                        for (auto & rect : newRects)
-                        {
-                            if (r.overlaps(rect))
-                            {
-                                r.max().y = rect.min().y;
-                            }
-                        }
-                        newRects.append(r);
-                    }
-
-                    if ((*it).max().x > positionedRect.max().x)
-                    {
-                        printf("B\n");
-                        auto r = RectangleType(PositionType(positionedRect.max().x, (*it).min().y), (*it).max());
-                        for (auto & rect : newRects)
-                        {
-                            if (r.overlaps(rect))
-                            {
-                                printf("ASKJALKSGJ\n");
-                                r.min().y = rect.max().y;
-                            }
-                        }
-                        newRects.append(r);
-                    }
-
-                    if ((*it).min().y < positionedRect.min().y)
-                    {
-                        printf("C\n");
-                        auto r = RectangleType((*it).min(), PositionType((*it).max().x, positionedRect.min().y));
-                        for (auto & rect : newRects)
-                        {
-                            if (r.overlaps(rect))
-                            {
-                                r.min().x = rect.max().x;
-                            }
-                        }
-                        newRects.append(r);
-                    }
-
-                    if ((*it).max().y > positionedRect.max().y)
-                    {
-                        printf("D\n");
-                        auto r = RectangleType(PositionType((*it).min().x, positionedRect.max().y), (*it).max());
-                        for (auto & rect : newRects)
-                        {
-                            if (r.overlaps(rect))
-                            {
-                                printf("ASKJALKSGJ\n");
-                                r.max().x = rect.min().x;
-                            }
-                        }
-                        newRects.append(r);
-                    }
-                    it = m_freeRects.remove(it);
+                    newRects.append(RectangleType(PositionType(positionedRect.max().x, br.min().y),
+                                                  PositionType(br.max().x, positionedRect.max().y)));
                 }
                 else
                 {
-                    ++it;
+                    newRects.append(RectangleType(PositionType(positionedRect.max().x, br.min().y),
+                                                  br.max()));
                 }
             }
 
-            {
-                auto sit = newRects.begin();
-                RectangleArray final;
-                final.reserve(newRects.count());
-                for (; sit != newRects.end(); ++sit)
-                {
-                    bool bIsContained = false;
-                    auto tit = newRects.begin();
-                    for (; tit != newRects.end(); ++tit)
-                    {
-                        if (tit != sit)
-                        {
-                            if ((*tit).contains(*sit))
-                            {
-                                printf("CONTAAAINS\n");
-                                bIsContained = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!bIsContained)
-                    {
-                        final.append(*sit);
-                    }
-                }
-
-                //last pass to remove overlaps between new rectangles
-
-
-                m_freeRects.insert(m_freeRects.end(), final.begin(), final.end());
-                // for(auto rect : final)
-                //     freeRectangle(rect);
-            }
+            //check if the new rectangles can now be merged with other ones
+            for(auto & r : newRects)
+                freeRectangle(r);
 
             return positionedRect;
         }
-
         return stick::Error(stick::ec::InvalidOperation, "Could not place rectangle inside current dimensions", STICK_FILE, STICK_LINE);
     }
 
@@ -385,9 +288,9 @@ namespace crunch
     template<class T>
     stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
     {
-        for(auto & rect : m_freeRects)
+        for (auto & rect : m_freeRects)
         {
-            if(rect.overlaps(_rect))
+            if (rect.overlaps(_rect))
             {
                 printf("THEY OVERLAP %f %f %f %f, %f %f %f %f\n", rect.min().x, rect.min().y, rect.width(), rect.height(), _rect.min().x, _rect.min().y, _rect.width(), _rect.height());
             }
