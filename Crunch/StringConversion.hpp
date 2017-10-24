@@ -79,14 +79,28 @@ namespace crunch
                 stick::toString(_col.a, _alloc), ")");
     }
 
-    // template<class T>
-    // stick::String toString(const Matrix4<T> & _mat, stick::Allocator & _alloc = stick::defaultAllocator())
-    // {
-    //     stick::String ret;
-    //     ret.reserve(512);
-    //     int res = std::sprintf(ret.ptr(), "Matrix4(%d, %d, %d, %d, \n, %d, %d, %d, %d, \n, %d, %d, %d, %d, \n, %d, %d, %d, %d)", 
-    //                 )
-    // }
+    template<class T>
+    stick::String toString(const Matrix3<T> & _mat, stick::Allocator & _alloc = stick::defaultAllocator())
+    {
+        stick::String ret(_alloc);
+        ret.appendFormatted("Matrix3([%f, %f, %f], [%f, %f, %f], [%f, %f, %f])",
+            _mat[0].x, _mat[0].y, _mat[0].z,
+            _mat[1].x, _mat[1].y, _mat[1].z,
+            _mat[2].x, _mat[2].y, _mat[2].z);
+        return ret;
+    }
+
+    template<class T>
+    stick::String toString(const Matrix4<T> & _mat, stick::Allocator & _alloc = stick::defaultAllocator())
+    {
+        stick::String ret(_alloc);
+        ret.appendFormatted("Matrix4([%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f])",
+            _mat[0].x, _mat[0].y, _mat[0].z, _mat[0].w,
+            _mat[1].x, _mat[1].y, _mat[1].z, _mat[1].w,
+            _mat[2].x, _mat[2].y, _mat[2].z, _mat[2].w,
+            _mat[3].x, _mat[3].y, _mat[3].z, _mat[3].w);
+        return ret;
+    }
 }
 
 #endif //CRUNCH_STRINGCONVERSION_HPP
