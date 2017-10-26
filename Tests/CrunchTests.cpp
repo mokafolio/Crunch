@@ -392,6 +392,9 @@ const Suite spec[] =
             printf("c %f %f\n", biarc.second.start.x, biarc.second.start.y);
             printf("d %f %f\n", biarc.second.end.x, biarc.second.end.y);
         }
+
+        Mat3f blubb = Mat3f::identity();
+        printf("BLUBB %s\n", crunch::toString(blubb).cString());
     }
 };
 
