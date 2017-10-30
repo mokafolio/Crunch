@@ -3,6 +3,7 @@
 
 #include <Stick/DynamicArray.hpp>
 #include <Stick/Variant.hpp>
+#include <Crunch/LineSegment.hpp>
 #include <Crunch/Line.hpp>
 #include <Crunch/GeometricFunc.hpp>
 #include <Crunch/CommonFunc.hpp>
@@ -838,7 +839,7 @@ namespace crunch
         // with zero epsilon:
         if (!isClose(m_pointOne, _point) && !isClose(m_pointTwo, _point))
         {
-            printf("SOLVE CUBIC\n");
+            // printf("SOLVE CUBIC\n");
             // Solve the cubic for both x- and y-coordinates and consider all
             // solutions, testing with the larger / looser geometric epsilon.
             auto resultHor = solveCubic(_point.x, true, (ValueType)0, (ValueType)1);
@@ -857,12 +858,12 @@ namespace crunch
         }
         else if (isClose(m_pointOne, _point, geometricEpsilon))
         {
-            printf("START\n");
+            // printf("START\n");
             return 0;
         }
         else if (isClose(m_pointTwo, _point, geometricEpsilon))
         {
-            printf("END\n");
+            // printf("END\n");
             return 1;
         }
 
@@ -1616,7 +1617,7 @@ namespace crunch
             if (++_calls >= 4096 || ++_recursion >= 40)
                 return _calls;
 
-            printf("START CUVE INTRE\n");
+            // printf("START CUVE INTRE\n");
 
             static ValueType fatLineEpsilon = BezierType::fatLineEpsilon;
 
@@ -1640,8 +1641,8 @@ namespace crunch
             std::reverse(&reverseHull.top.values[0], &reverseHull.top.values[0] + reverseHull.top.count);
             std::reverse(&reverseHull.bottom.values[0], &reverseHull.bottom.values[0] + reverseHull.bottom.count);
             stick::Maybe<ValueType> tMinClip, tMaxClip;
-            printf("%f %f %f %f\n", dp0, dp1, dp2, dp3);
-            printf("DMIN %f DMAX %f\n", dMin, dMax);
+            // printf("%f %f %f %f\n", dp0, dp1, dp2, dp3);
+            // printf("DMIN %f DMAX %f\n", dMin, dMax);
 
             // Stop iteration if all points and control points are collinear.
             if ((d1 == 0 && d2 == 0
@@ -1651,11 +1652,11 @@ namespace crunch
                     || !(tMinClip = clipConvexHull(hull, dMin, dMax))
                     || !(tMaxClip = clipConvexHull(reverseHull, dMin, dMax)))
             {
-                if (!tMinClip)
-                    printf("NO TMINCLIP\n");
-                if (!tMaxClip)
-                    printf("NO tMaxClip\n");
-                printf("EARLY OUT\n");
+                // if (!tMinClip)
+                //     printf("NO TMINCLIP\n");
+                // if (!tMaxClip)
+                //     printf("NO tMaxClip\n");
+                // printf("EARLY OUT\n");
                 return _calls;
             }
 
@@ -1670,25 +1671,25 @@ namespace crunch
 
             if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatLineEpsilon)
             {
-                printf("ISOLATED INTERSECTION\n");
+                // printf("ISOLATED INTERSECTION\n");
                 // We have isolated the intersection with sufficient precision
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
                 //_outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
                 if (_bFlip)
                 {
-                    printf("DA FLIPPED\n");
+                    // printf("DA FLIPPED\n");
                     _outResult.append(u, t, _b.positionAt(u));
                 }
                 else
                 {
-                    printf("DA NORMAL\n");
+                    // printf("DA NORMAL\n");
                     _outResult.append(t, u, _a.positionAt(t));
                 }
             }
             else
             {
-                printf("TRYING\n");
+                // printf("TRYING\n");
                 // Apply the result of the clipping to curve 1:
                 auto sliced = _a.slice(*tMinClip, *tMaxClip);
                 if (*tMaxClip - *tMinClip > 0.8)
@@ -1696,7 +1697,7 @@ namespace crunch
                     // Subdivide the curve which has converged the least.
                     if (tMaxNew - tMinNew > _uMax - _uMin)
                     {
-                        printf("A\n");
+                        // printf("A\n");
                         auto pair = sliced.subdivide(0.5);
                         auto t = (tMinNew + tMaxNew) / 2.0;
                         _calls = curveIntersections(
@@ -1708,7 +1709,7 @@ namespace crunch
                     }
                     else
                     {
-                        printf("B\n");
+                        // printf("B\n");
                         auto pair = _b.subdivide(0.5);
                         auto u = (_uMin + _uMax) / 2.0;
                         _calls = curveIntersections(
@@ -1724,13 +1725,13 @@ namespace crunch
                     // Iterate
                     if (_uMax - _uMin >= fatLineEpsilon)
                     {
-                        printf("ITER A\n");
+                        // printf("ITER A\n");
                         _calls = curveIntersections(_b, sliced, _outResult, !_bFlip,
                                                     _recursion, _calls, _uMin, _uMax, tMinNew, tMaxNew);
                     }
                     else
                     {
-                        printf("ITER B\n");
+                        // printf("ITER B\n");
                         // The interval on the other curve is already tight enough,
                         // therefore we keep iterating on the same curve.
                         _calls = curveIntersections(sliced, _b, _outResult, _bFlip,
@@ -1759,8 +1760,8 @@ namespace crunch
         // Avoid checking curves if completely out of control bounds.
         RectangleType myHandleBounds = handleBounds();
         RectangleType otherHandleBounds = _other.handleBounds();
-        printf("HANDE BOUNDS %s %s\n", toString(myHandleBounds.min()).cString(), toString(myHandleBounds.max()).cString());
-        printf("OTHER HANDE BOUNDS %s %s\n", toString(otherHandleBounds.min()).cString(), toString(otherHandleBounds.max()).cString());
+        // printf("HANDE BOUNDS %s %s\n", toString(myHandleBounds.min()).cString(), toString(myHandleBounds.max()).cString());
+        // printf("OTHER HANDE BOUNDS %s %s\n", toString(otherHandleBounds.min()).cString(), toString(otherHandleBounds.max()).cString());
         if (myHandleBounds.overlaps(otherHandleBounds))
         {
             // if we overlap, we are done.
@@ -1785,10 +1786,10 @@ namespace crunch
 
                 if (bStraightBoth)
                 {
-                    printf("BOTH STRAIGHT\n");
+                    // printf("BOTH STRAIGHT\n");
                     //find the intersection between the two line segments
-                    Line<VectorType> lineA = Line<VectorType>::fromPoints(positionOne(), positionTwo());
-                    Line<VectorType> lineB = Line<VectorType>::fromPoints(_other.positionOne(), _other.positionTwo());
+                    LineSegment<VectorType> lineA(positionOne(), positionTwo());
+                    LineSegment<VectorType> lineB(_other.positionOne(), _other.positionTwo());
                     if (auto result = intersect(lineA, lineB))
                     {
                         ret.append(parameterOf(result.intersections()[0]), _other.parameterOf(result.intersections()[0]), result.intersections()[0]);
@@ -1809,16 +1810,16 @@ namespace crunch
                     const BezierCubic * b = &_other;
                     if (bFlip) std::swap(a, b);
 
-                    Line<VectorType> line = Line<VectorType>::fromPoints(b->m_pointOne, b->m_pointTwo);
+                    LineSegment<VectorType> line(b->m_pointOne, b->m_pointTwo);
                     if (isClose(line.direction(), VectorType(0), epsilon))
                     {
-                        printf("POINT CHECK\n");
+                        // printf("POINT CHECK\n");
                         // Handle special case of a line with no direction as a point,
                         // and check if it is on the curve.
                         auto t = a->parameterOf(b->m_pointOne);
                         if (t != -1)
                         {
-                            printf("GOT DA POINT!!!!!\n");
+                            // printf("GOT DA POINT!!!!!\n");
                             if (bFlip)
                                 ret.append(0, t, b->m_pointOne);
                             else
@@ -1836,10 +1837,10 @@ namespace crunch
 
                         printf("LINE ANGLE %f %f %f\n", toDegrees(angle), s, c);
 
-                        VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.position(), s, c);
-                        VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.position(), s, c);
-                        VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.position(), s, c);
-                        VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.position(), s, c);
+                        VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.positionOne(), s, c);
+                        VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.positionOne(), s, c);
+                        VectorType rotatedH2 = detail::alignWithLineHelper(a->m_handleTwo, line.positionOne(), s, c);
+                        VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.positionOne(), s, c);
                         BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
 
                         printf("%s %s %s %s\n", toString(rotatedP1).cString(), toString(rotatedH1).cString(), toString(rotatedH2).cString(), toString(rotatedP2).cString());
@@ -1849,16 +1850,20 @@ namespace crunch
                         {
                             auto pos = a->positionAt(roots.values[i]);
                             auto t2 = b->parameterOf(pos);
-                            if (bFlip)
-                                ret.append(t2, roots.values[i], pos);
-                            else
-                                ret.append(roots.values[i], t2, pos);
+                            printf("ROOT %f %f\n", roots.values[i], t2);
+                            if (t2 != -1)
+                            {
+                                if (bFlip)
+                                    ret.append(t2, roots.values[i], pos);
+                                else
+                                    ret.append(roots.values[i], t2, pos);
+                            }
                         }
                     }
                 }
                 else
                 {
-                    printf("BOTH CURVES BRAAA\n");
+                    // printf("BOTH CURVES BRAAA\n");
                     // fat line clipping for curve curve intersecting
                     if (bFlip)
                         detail::curveIntersections(_other, *this, ret, bFlip, 0, 0, 0, 1, 0, 1);
@@ -1869,10 +1874,10 @@ namespace crunch
                 //@TODO: Add code to handle special case (see paper.js src)
             }
         }
-        else
-        {
-            printf("HANDLE BOUNDS DONT OVERELAP\n");
-        }
+        // else
+        // {
+        //     printf("HANDLE BOUNDS DONT OVERELAP\n");
+        // }
 
         // sort the intersections
         std::sort(&ret.values[0], &ret.values[0] + ret.count, [](const typename IntersectionResult::Intersection & _a,
@@ -1897,7 +1902,7 @@ namespace crunch
             using BiarcType = typename BezierCubic<T>::Biarc;
             using LineType = Line<VectorType>;
 
-            printf("BIARCS IMPL %f\n", _bezier.length());
+            // printf("BIARCS IMPL %f\n", _bezier.length());
 
             VectorType aNorm = _bezier.normalAt(0);
             VectorType bNorm = _bezier.normalAt(1.0);
@@ -1912,14 +1917,14 @@ namespace crunch
             VectorType amidDir(-ah.y, ah.x);
             LineType aMidLine(amidStart, amidDir);
 
-            printf("AMID START %s\n", toString(amidStart).cString());
+            // printf("AMID START %s\n", toString(amidStart).cString());
 
             VectorType bh = mid - _bezier.positionTwo();
             VectorType bmidStart = _bezier.positionTwo() + bh * 0.5;
             VectorType bmidDir(bh.y, -bh.x);
             LineType bMidLine(bmidStart, bmidDir);
 
-            printf("BMID START %s\n", toString(bmidStart).cString());
+            // printf("BMID START %s\n", toString(bmidStart).cString());
 
             auto ira = intersect(aLine, aMidLine);
             auto irb = intersect(bLine, bMidLine);
@@ -1930,7 +1935,7 @@ namespace crunch
                 ValueType radA = distance(ira.intersections()[0], _bezier.positionOne());
                 ValueType radB = distance(irb.intersections()[0], _bezier.positionTwo());
 
-                printf("RADII %f %f\n", radA, radB);
+                // printf("RADII %f %f\n", radA, radB);
 
                 /*VectorType ta = ira.intersections()[0] - normalize(amidDir) * radA;
                 VectorType tb = irb.intersections()[0] - normalize(bmidDir) * radB;
@@ -1971,7 +1976,7 @@ namespace crunch
 
                 if (divergence <= _tolerance)
                 {
-                    printf("GOT IIIIIIT\n");
+                    // printf("GOT IIIIIIT\n");
 
                     bool cw = _bezier.area() >= 0;
                     auto va = _bezier.positionOne() - ira.intersections()[0];
@@ -1991,9 +1996,9 @@ namespace crunch
                     if (cw && bsweep < 0) bsweep = Constants<ValueType>::twoPi() + bsweep;
                     if (!cw && bsweep > 0) bsweep = bsweep - Constants<ValueType>::twoPi();
 
-                    printf("CW: %d\n", cw);
-                    printf("START ANGLE %f SWEEP %f\n", toDegrees(astart), toDegrees(asweep));
-                    printf("START ANGLE2 %f SWEEP2 %f\n", toDegrees(bstart), toDegrees(bsweep));
+                    // printf("CW: %d\n", cw);
+                    // printf("START ANGLE %f SWEEP %f\n", toDegrees(astart), toDegrees(asweep));
+                    // printf("START ANGLE2 %f SWEEP2 %f\n", toDegrees(bstart), toDegrees(bsweep));
 
                     ArcType a = {ira.intersections()[0], _bezier.positionOne(), mid, radA, astart, asweep};
                     ArcType b = {irb.intersections()[0], mid, _bezier.positionTwo(), radB, bstart, bsweep};
@@ -2002,9 +2007,9 @@ namespace crunch
                 }
                 else
                 {
-                    printf("SUBDIVIDEIT BRAA\n");
+                    // printf("SUBDIVIDEIT BRAA\n");
                     auto pair = _bezier.subdivide(0.5);
-                    printf("START %s END %s\n", toString(pair.first.positionTwo()).cString(), toString(pair.second.positionOne()).cString());
+                    // printf("START %s END %s\n", toString(pair.first.positionTwo()).cString(), toString(pair.second.positionOne()).cString());
 
                     biarcsImpl(pair.first, _outArcs, _tolerance);
                     biarcsImpl(pair.second, _outArcs, _tolerance);
@@ -2032,24 +2037,24 @@ namespace crunch
                                 ValueType _tolerance) const
     {
         //for straight beziers, we simply return the two endpoints
-        if(isStraight())
+        if (isStraight())
         {
-            _outArcs.append((PointPair){m_pointOne, m_pointTwo});
+            _outArcs.append((PointPair) {m_pointOne, m_pointTwo});
             return;
         }
 
         auto res = inflections();
 
-        printf("INFLECTIONS: %i\n", res.count);
+        // printf("INFLECTIONS: %i\n", res.count);
 
         if (res.count)
         {
             if (res.count == 1)
             {
                 auto pair = subdivide(res.values[0]);
-                printf("FIRST\n");
+                // printf("FIRST\n");
                 detail::biarcsImpl(pair.first, _outArcs, _tolerance);
-                printf("SECOND\n");
+                // printf("SECOND\n");
                 detail::biarcsImpl(pair.second, _outArcs, _tolerance);
             }
             else
@@ -2061,7 +2066,7 @@ namespace crunch
         }
         else
         {
-            printf("NO INFLECTIONS\n");
+            // printf("NO INFLECTIONS\n");
             detail::biarcsImpl(*this, _outArcs, _tolerance);
         }
     }
