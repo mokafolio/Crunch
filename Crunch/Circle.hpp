@@ -141,19 +141,19 @@ namespace crunch
         VectorType lineOneStart = (_a + _b) * 0.5;
         VectorType lineOneEnd = (_b - _a);
         lineOneEnd = lineOneStart + VectorType(-lineOneEnd.y, lineOneEnd.x);
-        Line<VectorType> lineOne(lineOneStart, lineOneEnd);
+        Line<VectorType> lineOne = Line<VectorType>::fromPoints(lineOneStart, lineOneEnd);
 
         VectorType lineTwoStart = (_b + _c) * 0.5;
         VectorType lineTwoEnd = (_c - _b);
         lineTwoEnd = lineTwoStart + VectorType(-lineTwoEnd.y, lineTwoEnd.x);
-        Line<VectorType> lineTwo(lineTwoStart, lineTwoEnd);
+        Line<VectorType> lineTwo = Line<VectorType>::fromPoints(lineTwoStart, lineTwoEnd);
 
         IntersectionResult<VectorType> result = crunch::intersect(lineOne, lineTwo);
-        Line<VectorType> line(_a, _c);
+        Line<VectorType> line = Line<VectorType>::fromPoints(_a, _c);
 
-        stick::Int32 throughSide = line.side(_b);
         if (!result)
         {
+            stick::Int32 throughSide = line.side(_b);
             //TODO: Better error codes
             if (throughSide == 0)
                 return stick::Error(stick::ec::InvalidOperation, "Colinear", STICK_FILE, STICK_LINE);
