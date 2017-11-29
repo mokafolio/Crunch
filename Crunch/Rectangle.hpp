@@ -4,6 +4,7 @@
 #include <algorithm> //for swap
 
 #include <Crunch/Vector2.hpp>
+#include <Crunch/LineSegment.hpp>
 
 namespace crunch
 {
@@ -21,6 +22,8 @@ namespace crunch
          */
         using Point = Vector2<T>;
         using VectorType = Point;
+
+        using Segment = LineSegment<Point>;
 
         /**
          * @brief Default Constructor.
@@ -211,6 +214,16 @@ namespace crunch
          */
         Point center() const;
 
+
+        Segment leftSegment() const;
+
+        Segment topSegment() const;
+
+        Segment rightSegment() const;
+
+        Segment bottomSegment() const;
+
+
         /**
          * @brief Returns the width of the rectangle.
          */
@@ -225,6 +238,11 @@ namespace crunch
          * @brief Returns the size of the rectangle.
          */
         Point size() const;
+
+        /**
+         * @brief Calculates and returns the diagonal of the rectangle.
+         */
+        T diagonal() const;
 
 
     private:
@@ -503,6 +521,38 @@ namespace crunch
     typename Rectangle<T>::Point Rectangle<T>::bottomLeft() const
     {
         return min() + VectorType(0, height());
+    }
+
+    template<class T>
+    T Rectangle<T>::diagonal() const
+    {
+        T w = width();
+        T h = height();
+        return std::sqrt(w * w + h * h);
+    }
+
+    template<class T>
+    typename Rectangle<T>::Segment Rectangle<T>::leftSegment() const
+    {
+        return Segment(bottomLeft(), topLeft());
+    }
+
+    template<class T>
+    typename Rectangle<T>::Segment Rectangle<T>::topSegment() const
+    {
+        return Segment(topLeft(), topRight());
+    }
+
+    template<class T>
+    typename Rectangle<T>::Segment Rectangle<T>::rightSegment() const
+    {
+        return Segment(topRight(), bottomRight());
+    }
+
+    template<class T>
+    typename Rectangle<T>::Segment Rectangle<T>::bottomSegment() const
+    {
+        return Segment(bottomRight(), bottomLeft());
     }
 
     //free function implementations
