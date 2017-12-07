@@ -112,7 +112,6 @@ namespace crunch
         T B = _b;
         T D;
 
-
         if (abs(_a) < std::numeric_limits<T>::epsilon())
         {
             // This could just be a linear equation

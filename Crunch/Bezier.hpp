@@ -510,7 +510,7 @@ namespace crunch
     typename BezierCubic<T>::VectorType BezierCubic<T>::normalAt(ValueType _t) const
     {
         VectorType tan = tangentAt(_t);
-        return VectorType(-tan.y, tan.x);
+        return VectorType(tan.y, -tan.x);
     }
 
     template<class T>
@@ -591,6 +591,8 @@ namespace crunch
         v5 = v2 * u + v3 * _t;
         v6 = v4 * u + v5 * _t;
 
+        //@TODO: I imagine these are not needed anymore? :D
+        
         STICK_ASSERT(!std::isnan(v1.x));
         STICK_ASSERT(!std::isnan(v1.y));
 
