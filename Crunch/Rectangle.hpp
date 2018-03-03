@@ -100,6 +100,8 @@ namespace crunch
          */
         bool overlaps(const Rectangle & _other) const;
 
+        IntersectionResult<VectorType> intersections(const Segment & _lineSegment);
+
         /**
          * @brief Sets the stick::Size of the rectangle.
          */

@@ -1794,7 +1794,7 @@ namespace crunch
                     LineSegment<VectorType> lineB(_other.positionOne(), _other.positionTwo());
                     if (auto result = intersect(lineA, lineB))
                     {
-                        ret.append(parameterOf(result.intersections()[0]), _other.parameterOf(result.intersections()[0]), result.intersections()[0]);
+                        ret.append(parameterOf(*result), _other.parameterOf(*result), *result);
                     }
                 }
                 else if (bStraight1 || bStraight2)
@@ -1934,8 +1934,8 @@ namespace crunch
             STICK_ASSERT(ira && irb);
             if (ira && irb)
             {
-                ValueType radA = distance(ira.intersections()[0], _bezier.positionOne());
-                ValueType radB = distance(irb.intersections()[0], _bezier.positionTwo());
+                ValueType radA = distance(*ira, _bezier.positionOne());
+                ValueType radB = distance(*irb, _bezier.positionTwo());
 
                 // printf("RADII %f %f\n", radA, radB);
 
@@ -1964,12 +1964,12 @@ namespace crunch
                     auto p = _bezier.positionAt(t);
                     if (t < 0.5)
                     {
-                        auto d = distance(p, ira.intersections()[0]);
+                        auto d = distance(p, *ira);
                         divergence += abs(d - radA);
                     }
                     else
                     {
-                        auto d = distance(p, irb.intersections()[0]);
+                        auto d = distance(p, *irb);
                         divergence += abs(d - radB);
                     }
                 }
@@ -1981,14 +1981,14 @@ namespace crunch
                     // printf("GOT IIIIIIT\n");
 
                     bool cw = _bezier.area() >= 0;
-                    auto va = _bezier.positionOne() - ira.intersections()[0];
-                    auto va2 = mid - ira.intersections()[0];
+                    auto va = _bezier.positionOne() - *ira;
+                    auto va2 = mid - *ira;
 
                     auto astart = std::atan2(va.y, va.x);
                     auto asweep = std::atan2(va2.y, va2.x) - astart;
 
-                    auto vb = mid - irb.intersections()[0];
-                    auto vb2 = _bezier.positionTwo() - irb.intersections()[0];
+                    auto vb = mid - *irb;
+                    auto vb2 = _bezier.positionTwo() - *irb;
                     auto bstart = std::atan2(vb.y, vb.x);
                     auto bsweep = std::atan2(vb2.y, vb2.x) - astart;
 
@@ -2002,8 +2002,8 @@ namespace crunch
                     // printf("START ANGLE %f SWEEP %f\n", toDegrees(astart), toDegrees(asweep));
                     // printf("START ANGLE2 %f SWEEP2 %f\n", toDegrees(bstart), toDegrees(bsweep));
 
-                    ArcType a = {ira.intersections()[0], _bezier.positionOne(), mid, radA, astart, asweep};
-                    ArcType b = {irb.intersections()[0], mid, _bezier.positionTwo(), radB, bstart, bsweep};
+                    ArcType a = {*ira, _bezier.positionOne(), mid, radA, astart, asweep};
+                    ArcType b = {*irb, mid, _bezier.positionTwo(), radB, bstart, bsweep};
 
                     _outArcs.append((BiarcType) {a, b});
                 }

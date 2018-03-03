@@ -193,14 +193,9 @@ namespace crunch
     //     return abs(signedDistance(_point));
     // }
 
-    template<class VT>
-    IntersectionResult<VT> intersect(const LineSegment<VT> & _a, const LineSegment<VT> & _b);
-
     template<class T>
-    IntersectionResult<Vector2<T> > intersect(const LineSegment<Vector2<T> > & _a, const LineSegment<Vector2<T> > & _b)
+    stick::Maybe<Vector2<T>> intersect(const LineSegment<Vector2<T> > & _a, const LineSegment<Vector2<T> > & _b)
     {
-        typedef typename IntersectionResult<Vector2<T> >::ResultArray ResultArray;
-
         Vector2<T> dirA = _a.direction();
         Vector2<T> dirB = _b.direction();
 
@@ -209,18 +204,16 @@ namespace crunch
 
         //parallel case (TODO: use epsilon)
         if (abs(cross) < std::numeric_limits<T>::epsilon())
-            return IntersectionResult<Vector2<T> >();
-
-        ResultArray results;
+            return stick::Maybe<Vector2<T>>();
 
         Vector2<T> dir = _a.positionOne() - _b.positionOne();
         T d = (dir.y * dirB.x - dir.x * dirB.y) / cross;
         T t = (dir.y * dirA.x - dir.x * dirA.y) / cross;
 
         if (t >= 0 && t <= 1 && d >= 0 && d <= 1)
-            results.append(_a.positionOne() + dirA * d);
+            return _a.positionOne() + dirA * d;
 
-        return IntersectionResult<Vector2<T> >(results);
+        return stick::Maybe<Vector2<T>>();
     }
 
     using LineSegment2f = LineSegment<Vector2<stick::Float32>>;

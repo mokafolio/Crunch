@@ -127,14 +127,12 @@ const Suite spec[] =
         Line2f line2(Vec2f(50, 0), Vec2f(0, 1));
         auto result = intersect(line, line2);
         EXPECT(result);
-        EXPECT(result.intersections().count() == 1);
-        EXPECT(result.intersections()[0] == Vec2f(50, 0));
+        EXPECT(*result == Vec2f(50, 0));
 
         Line2f line3(Vec2f(-50, 0), Vec2f(0, 1));
         auto result2 = intersect(line, line3);
         EXPECT(result2);
-        EXPECT(result2.intersections().count() == 1);
-        EXPECT(result2.intersections()[0] == Vec2f(-50, 0));
+        EXPECT(*result2 == Vec2f(-50, 0));
 
         Line2f line4(Vec2f(0, 10), Vec2f(1, 0));
         auto result3 = intersect(line, line4);
@@ -157,8 +155,7 @@ const Suite spec[] =
         LineSegment2f line2(Vec2f(50, -50), Vec2f(50, 50));
         auto result = intersect(line, line2);
         EXPECT(result);
-        EXPECT(result.intersections().count() == 1);
-        EXPECT(result.intersections()[0] == Vec2f(50, 0));
+        EXPECT(*result == Vec2f(50, 0));
 
         LineSegment2f line3(Vec2f(-50, -50), Vec2f(-50, 50));
         auto result2 = intersect(line, line3);

@@ -5,6 +5,7 @@
 #include <Stick/StringConversion.hpp>
 #include <cstdio> //for sprintf
 
+//@TODO: Move thse into the actual header files of the classes
 namespace crunch
 {
     template<class T>
