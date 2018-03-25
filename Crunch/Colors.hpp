@@ -7,6 +7,7 @@
 #include <Crunch/Constants.hpp>
 #include <Crunch/CommonFunc.hpp>
 
+#include <Stick/String.hpp>
 #include <Stick/HashMap.hpp>
 
 #include <cmath>

@@ -133,6 +133,8 @@ namespace crunch
 
         m_currentWidth = std::min(m_maxWidth, m_currentWidth);
         m_currentHeight = std::min(m_maxHeight, m_currentHeight);
+        if(m_currentHeight > m_maxHeight) m_maxHeight = m_currentHeight;
+        if(m_currentWidth > m_maxWidth) m_maxWidth = m_currentWidth;
         m_freeRects.append(RectangleType(0, 0, m_currentWidth, m_currentHeight));
     }
 
@@ -212,6 +214,7 @@ namespace crunch
             {
                 if (m_currentWidth < m_maxHeight || m_currentHeight < m_maxHeight)
                 {
+                    printf("RESIZE RECT PACKER\n");
                     //if we can't fit it, we resize the available space and adjust the freeRects accordingly
                     if (m_currentWidth <= m_currentHeight)
                     {
@@ -276,7 +279,6 @@ namespace crunch
                     (crunch::isClose((*it).topLeft(), _rect.bottomLeft()) && crunch::isClose((*it).topRight(), _rect.bottomRight())))
             {
                 auto currentRect = crunch::merge(*it, _rect);
-                printf("MERGIN DA RECTS\n");
                 m_freeRects.remove(it);
                 return currentRect;
             }
@@ -288,13 +290,13 @@ namespace crunch
     template<class T>
     stick::Error RectanglePackerT<T>::freeRectangle(const RectangleType & _rect)
     {
-        for (auto & rect : m_freeRects)
+        /*for (auto & rect : m_freeRects)
         {
             if (rect.overlaps(_rect))
             {
                 printf("THEY OVERLAP %f %f %f %f, %f %f %f %f\n", rect.min().x, rect.min().y, rect.width(), rect.height(), _rect.min().x, _rect.min().y, _rect.width(), _rect.height());
             }
-        }
+        }*/
         auto mergedRect = freeRectangleHelper(_rect);
         while (mergedRect)
         {
