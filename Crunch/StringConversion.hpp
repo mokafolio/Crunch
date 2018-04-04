@@ -95,7 +95,7 @@ namespace crunch
     stick::String toString(const Matrix4<T> & _mat, stick::Allocator & _alloc = stick::defaultAllocator())
     {
         stick::String ret(_alloc);
-        ret.appendFormatted("Matrix4([%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f])",
+        ret.appendFormatted("Matrix4([%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f])",
             _mat[0].x, _mat[0].y, _mat[0].z, _mat[0].w,
             _mat[1].x, _mat[1].y, _mat[1].z, _mat[1].w,
             _mat[2].x, _mat[2].y, _mat[2].z, _mat[2].w,
