@@ -257,6 +257,7 @@ namespace crunch
     };
 
     using Rectf = Rectangle<stick::Float32>;
+    using Recti = Rectangle<stick::Int32>;
 
     //free functions
     template<class T>
