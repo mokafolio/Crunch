@@ -102,7 +102,7 @@ namespace crunch
          *
          * Note: Remember, column major memory layout.
          */
-        explicit inline Matrix4(T * _floatArray);
+        explicit inline Matrix4(const T * _floatArray);
 
         /**
          * @brief Assign another matrix to this.
@@ -497,7 +497,7 @@ namespace crunch
     }
 
     template<class T>
-    inline Matrix4<T>::Matrix4(T * _floatArray)
+    inline Matrix4<T>::Matrix4(const T * _floatArray)
     {
         std::memcpy(m_col0.ptr(), _floatArray, 16 * sizeof(T));
     }
