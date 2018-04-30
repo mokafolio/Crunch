@@ -608,19 +608,23 @@ namespace crunch
     template<class T>
     inline Vector2<T> Matrix3<T>::operator * (const Vector2<T> & _vec) const
     {
-        return *this * Vector3<T>(_vec.x, _vec.y, 1.0);
+        // return *this * Vector3<T>(_vec.x, _vec.y, 1.0);
+        return
+        {
+            _vec.x * m_col0.x + _vec.y * m_col1.x + m_col2.x,
+            _vec.x * m_col0.y + _vec.y * m_col1.y + m_col2.y
+        };
     }
 
     template<class T>
     inline Vector3<T> Matrix3<T>::operator * (const Vector3<T> & _vec) const
     {
-        Vector3<T> ret;
-
-        ret.x = _vec.x * m_col0.x + _vec.y * m_col1.x + _vec.z * m_col2.x;
-        ret.y = _vec.x * m_col0.y + _vec.y * m_col1.y + _vec.z * m_col2.y;
-        ret.z = _vec.x * m_col0.z + _vec.y * m_col1.z + _vec.z * m_col2.z;
-
-        return ret;
+        return
+        {
+            _vec.x * m_col0.x + _vec.y * m_col1.x + _vec.z * m_col2.x,
+            _vec.x * m_col0.y + _vec.y * m_col1.y + _vec.z * m_col2.y,
+            _vec.x * m_col0.z + _vec.y * m_col1.z + _vec.z * m_col2.z
+        };
     }
 
     template<class T>

@@ -184,6 +184,9 @@ namespace crunch
          */
         inline Matrix4 operator * (T _v) const;
 
+
+        inline Vector2<T> operator * (const Vector2<T> & _vec) const;
+
         /**
          * @brief Multiplies a matrix with a column 3D vector.
          *
@@ -633,23 +636,37 @@ namespace crunch
     //TODO: Add overloaded operators for matrix multiplication
 
     template<class T>
+    inline Vector2<T> Matrix4<T>::operator*(const Vector2<T> & _vec) const
+    {
+        return
+        {
+            _vec.x * m_col0.x + _vec.y * m_col1.x + m_col3.x,
+            _vec.x * m_col0.y + _vec.y * m_col1.y + m_col3.y
+        };
+    }
+
+    template<class T>
     inline Vector3<T> Matrix4<T>::operator*(const Vector3<T> & _vec) const
     {
-        return Vector3<T>(_vec.x * m_col0.x + _vec.y * m_col1.x + m_col2.x * _vec.z + m_col3.x,
-                          _vec.x * m_col0.y + _vec.y * m_col1.y + m_col2.y * _vec.z + m_col3.y,
-                          _vec.x * m_col0.z + _vec.y * m_col1.z + m_col2.z * _vec.z + m_col3.z
-                         );
+        return
+        {
+            _vec.x * m_col0.x + _vec.y * m_col1.x + m_col2.x * _vec.z + m_col3.x,
+            _vec.x * m_col0.y + _vec.y * m_col1.y + m_col2.y * _vec.z + m_col3.y,
+            _vec.x * m_col0.z + _vec.y * m_col1.z + m_col2.z * _vec.z + m_col3.z
+        };
     }
 
 
     template<class T>
     inline Vector4<T> Matrix4<T>::operator*(const Vector4<T> & _vec) const
     {
-        return Vector4<T>(_vec.x * m_col0.x + _vec.y * m_col1.x + m_col2.x * _vec.z + m_col3.x * _vec.w,
-                          _vec.x * m_col0.y + _vec.y * m_col1.y + m_col2.y * _vec.z + m_col3.y * _vec.w,
-                          _vec.x * m_col0.z + _vec.y * m_col1.z + m_col2.z * _vec.z + m_col3.z * _vec.w,
-                          _vec.x * m_col0.w + _vec.y * m_col1.w + m_col2.w * _vec.z + m_col3.w * _vec.w
-                         );
+        return
+        {
+            _vec.x * m_col0.x + _vec.y * m_col1.x + m_col2.x * _vec.z + m_col3.x * _vec.w,
+            _vec.x * m_col0.y + _vec.y * m_col1.y + m_col2.y * _vec.z + m_col3.y * _vec.w,
+            _vec.x * m_col0.z + _vec.y * m_col1.z + m_col2.z * _vec.z + m_col3.z * _vec.w,
+            _vec.x * m_col0.w + _vec.y * m_col1.w + m_col2.w * _vec.z + m_col3.w * _vec.w
+        };
     }
 
     template<class T>
