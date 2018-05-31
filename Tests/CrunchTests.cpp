@@ -11,6 +11,7 @@
 #include <Crunch/LineSegment.hpp>
 #include <Crunch/Matrix2.hpp>
 #include <Crunch/Matrix3.hpp>
+#include <Crunch/Matrix32.hpp>
 #include <Crunch/Matrix4.hpp>
 #include <Crunch/MatrixFunc.hpp>
 #include <Crunch/NumericalFunc.hpp>

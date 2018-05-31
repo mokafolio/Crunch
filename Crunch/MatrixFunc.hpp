@@ -223,7 +223,7 @@ namespace crunch
     template<class T>
     inline Matrix4<T> inverse(const Matrix4<T> & _mat)
     {
-        return adjoint(_mat) * (1.0 / determinant(_mat));
+        return adjoint(_mat) * (T(1.0) / determinant(_mat));
     }
 
     /**
