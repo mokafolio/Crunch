@@ -31,6 +31,7 @@ Crunch/Line.hpp
 Crunch/LineSegment.hpp
 Crunch/Matrix2.hpp
 Crunch/Matrix3.hpp
+Crunch/Matrix32.hpp
 Crunch/Matrix4.hpp
 Crunch/MatrixFunc.hpp
 Crunch/NumericalFunc.hpp

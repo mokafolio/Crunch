@@ -525,8 +525,8 @@ namespace crunch
         T s = std::sin(_radians);
 
         return Matrix2<T>(
-                   Vector2<T>(c, -s),
-                   Vector2<T>(s, c)
+                   Vector2<T>(c, s),
+                   Vector2<T>(-s, c)
                );
     }
 

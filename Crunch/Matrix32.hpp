@@ -458,17 +458,22 @@ namespace crunch
     template<class T>
     inline Matrix32<T> Matrix32<T>::operator * (const Matrix32 & _mat) const
     {
-        return Matrix32<T>(
-                   *this * _mat.m_col0,
-                   *this * _mat.m_col1,
-                   *this * _mat.m_col2
-               );
+        Matrix32<T> ret;
+        ret.m_col0.x = _mat.m_col0.x *  m_col0.x + _mat.m_col0.y * m_col1.x;
+        ret.m_col0.y = _mat.m_col0.x *  m_col0.y + _mat.m_col0.y * m_col1.y;
+
+        ret.m_col1.x = _mat.m_col1.x *  m_col0.x + _mat.m_col1.y * m_col1.x;
+        ret.m_col1.y = _mat.m_col1.x *  m_col0.y + _mat.m_col1.y * m_col1.y;
+
+        ret.m_col2.x = _mat.m_col2.x *  m_col0.x + _mat.m_col2.y * m_col1.x + m_col2.y;
+        ret.m_col2.y = _mat.m_col2.x *  m_col0.y + _mat.m_col2.y * m_col1.y + m_col2.y;
+        return ret;
     }
 
     template<class T>
     inline Matrix32<T> & Matrix32<T>::operator *= (const Matrix32 & _mat)
     {
-        *this = *this * _mat;
+        *this = _mat * *this;
         return *this;
     }
 
@@ -590,8 +595,8 @@ namespace crunch
         T s = std::sin(_radians);
 
         return Matrix32<T>(
-                   Vector2<T>(c, -s),
-                   Vector2<T>(s, c),
+                   Vector2<T>(c, s),
+                   Vector2<T>(-s, c),
                    Vector2<T>(0)
                );
     }

@@ -204,6 +204,19 @@ namespace crunch
         return adjoint(_mat) * (T(1.0) / determinant(_mat));
     }
 
+
+    /**
+     * @brief Calculates the inverse matrix of the input matrix.
+     *
+     * http://en.wikipedia.org/wiki/Invertible_matrix
+     */
+    template<class T>
+    inline Matrix32<T> inverse(const Matrix32<T> & _mat)
+    {
+        Matrix2<T> tmp = inverse(Matrix2<T>(_mat[0], _mat[1]));
+        return Matrix32<T>(tmp[0], tmp[1], tmp * _mat[2]);
+    }
+
     /**
      * @brief Calculates the inverse matrix of the input matrix.
      *

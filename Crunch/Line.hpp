@@ -1,6 +1,7 @@
 #ifndef CRUNCH_LINE_HPP
 #define CRUNCH_LINE_HPP
 
+#include <Stick/Maybe.hpp>
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
 #include <Crunch/CommonFunc.hpp>

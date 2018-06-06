@@ -1,6 +1,7 @@
 #ifndef CRUNCH_LINESEGMENT_HPP
 #define CRUNCH_LINESEGMENT_HPP
 
+#include <Stick/Maybe.hpp>
 #include <Crunch/Vector2.hpp>
 #include <Crunch/Vector3.hpp>
 #include <Crunch/CommonFunc.hpp>

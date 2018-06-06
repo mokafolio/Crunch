@@ -393,6 +393,27 @@ const Suite spec[] =
 
         Mat3f blubb = Mat3f::identity();
         printf("BLUBB %s\n", crunch::toString(blubb).cString());
+    },
+    SUITE("Mat32f tests")
+    {
+        Mat32f trans = Mat32f::translation(100, 50);
+        Vec2f translated = trans * Vec2f(3, 1);
+        EXPECT(translated == Vec2f(103, 51));
+
+        Mat32f scale = Mat32f::scaling(2.0, 0.5);
+        Vec2f scaled = scale * Vec2f(10.0, 20.0);
+        EXPECT(scaled == Vec2f(20.0, 10.0));
+
+        Mat32f rot = Mat32f::rotation(Constants<Float32>::halfPi());
+        Vec2f rotated = rot * Vec2f(100, 0);
+        EXPECT(isClose(rotated, Vec2f(0, 100), 0.00001f));
+
+        Mat32f tf = Mat32f::translation(-200, -200);
+        tf.rotate(Constants<Float32>::halfPi());
+        tf.translate(Vec2f(200, 200));
+
+        Vec2f rotated2 = tf * Vec2f(300, 200);
+        EXPECT(isClose(rotated2, Vec2f(200, 300), 0.00001f));
     }
 };
 
