@@ -242,7 +242,6 @@ namespace crunch
     /**
      * @brief Decomposes the 2D input matrix
      *
-     * TODO: Add shear?
      *
      * @param _mat The matrix to decompose.
      * @param _outTranslation Will hold the translation of the input matrix.
@@ -252,7 +251,7 @@ namespace crunch
     template<class T>
     inline void decompose(const Matrix3<T> & _mat, Vector2<T> & _outTranslation, T & _outRotation, Vector2<T> & _outScale)
     {
-        _outTranslation = _mat[2].xy();
+        _outTranslation = _mat[2];
 
         T a = _mat.element(0, 0);
         T b = _mat.element(1, 0);
@@ -261,6 +260,61 @@ namespace crunch
 
         _outScale = Vector2<T>(crunch::sqrt(a * a + b * b),
                                crunch::sqrt(c * c + d * d));
+
+        _outRotation = -atan2(b, a);
+    }
+
+    /**
+    * @brief Decomposes the 2D input matrix
+    *
+    *
+    * @param _mat The matrix to decompose.
+    * @param _outTranslation Will hold the translation of the input matrix.
+    * @param _outRotation Will hold the rotation of the input matrix.
+    * @param _outScale Will hold the scale of the input matrix.
+    */
+    template<class T>
+    inline void decompose(const Matrix32<T> & _mat,
+                          Vector2<T> & _outTranslation,
+                          T & _outRotation,
+                          Vector2<T> & _outSkew,
+                          Vector2<T> & _outScale)
+    {
+        _outTranslation = _mat[2];
+
+        T a = _mat.element(0, 0);
+        T b = _mat.element(1, 0);
+        T c = _mat.element(0, 1);
+        T d = _mat.element(1, 1);
+
+        T det = a * d - b * c;
+
+        if (a != 0 || b != 0)
+        {
+            T r = std::sqrt(a * a + b * b);
+            _outRotation = std::acos(a / r) * (b > 0 ? 1 : -1);
+            _outScale.x = r;
+            _outScale.y = det / r;
+            _outSkew.x = std::atan2(a * c + b * d, r * r);
+            _outSkew.y = 0;
+        }
+        else if (c != 0 || d != 0)
+        {
+            T s = std::sqrt(c * c + d * d);
+            _outRotation = std::asin(c / s)  * (d > 0 ? 1 : -1);
+            _outScale.x = det / s;
+            _outScale.y = s;
+            _outSkew.x = 0;
+            _outSkew.y = std::atan2(a * c + b * d, s * s);
+        }
+        else /* a = b = c = d = 0 */
+        {
+            _outRotation = 0;
+            _outScale.x = 0;
+            _outScale.y = 0;
+            _outSkew.x = 0;
+            _outSkew.y = 0;
+        }
 
         _outRotation = -atan2(b, a);
     }

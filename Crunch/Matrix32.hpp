@@ -465,7 +465,7 @@ namespace crunch
         ret.m_col1.x = _mat.m_col1.x *  m_col0.x + _mat.m_col1.y * m_col1.x;
         ret.m_col1.y = _mat.m_col1.x *  m_col0.y + _mat.m_col1.y * m_col1.y;
 
-        ret.m_col2.x = _mat.m_col2.x *  m_col0.x + _mat.m_col2.y * m_col1.x + m_col2.y;
+        ret.m_col2.x = _mat.m_col2.x *  m_col0.x + _mat.m_col2.y * m_col1.x + m_col2.x;
         ret.m_col2.y = _mat.m_col2.x *  m_col0.y + _mat.m_col2.y * m_col1.y + m_col2.y;
         return ret;
     }
