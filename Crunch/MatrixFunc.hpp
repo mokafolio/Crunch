@@ -214,7 +214,7 @@ namespace crunch
     inline Matrix32<T> inverse(const Matrix32<T> & _mat)
     {
         Matrix2<T> tmp = inverse(Matrix2<T>(_mat[0], _mat[1]));
-        return Matrix32<T>(tmp[0], tmp[1], tmp * _mat[2]);
+        return Matrix32<T>(tmp[0], tmp[1], tmp * -_mat[2]);
     }
 
     /**
