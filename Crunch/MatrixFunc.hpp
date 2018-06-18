@@ -2,6 +2,7 @@
 #define CRUNCH_MATRIXFUNC_HPP
 
 #include <Crunch/Matrix2.hpp>
+#include <Crunch/Matrix32.hpp>
 #include <Crunch/Matrix4.hpp>
 #include <Crunch/GeometricFunc.hpp>
 

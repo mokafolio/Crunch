@@ -69,12 +69,12 @@ namespace crunch
         /**
          * @brief Returns true if both rectangles are identical.
          */
-        bool operator == (const Rectangle & _other);
+        bool operator == (const Rectangle & _other) const;
 
         /**
          * @brief Returns true if both rectangles are different.
          */
-        bool operator != (const Rectangle & _other);
+        bool operator != (const Rectangle & _other) const;
 
         /**
          * @brief Returns true if the provided rectangle is fully contained.
@@ -327,13 +327,13 @@ namespace crunch
     }
 
     template<class T>
-    bool Rectangle<T>::operator == (const Rectangle & _other)
+    bool Rectangle<T>::operator == (const Rectangle & _other) const
     {
         return (m_min == _other.m_min && m_max == _other.m_max);
     }
 
     template<class T>
-    bool Rectangle<T>::operator != (const Rectangle & _other)
+    bool Rectangle<T>::operator != (const Rectangle & _other) const
     {
         return !(*this == _other);
     }

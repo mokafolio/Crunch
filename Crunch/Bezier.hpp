@@ -372,13 +372,14 @@ namespace crunch
 
             inline void append(ValueType _parameterOne, ValueType _parameterTwo, const VectorType & _pos)
             {
+                STICK_ASSERT(count < 9);
                 values[count++] = {_parameterOne, _parameterTwo, _pos};
             }
 
             //Even though technically there can only be 9 intersections between two curves
             //due to floating point inacuracies and the iterative approach with overlapping
-            //curves there might be more (false) ones. Hence we make this a dynamic array for
-            //now until we have a proper way of dealing with overlaps. @TODOOOO!!!1111
+            //curves there might be more (false) ones. Hence we should make this a dynamic array for
+            //now until we have a proper way of dealing with overlaps??. @TODOOOO!!!1111
             Intersection values[9];
             stick::Int32 count = 0;
         };
@@ -1654,11 +1655,6 @@ namespace crunch
                     || !(tMinClip = clipConvexHull(hull, dMin, dMax))
                     || !(tMaxClip = clipConvexHull(reverseHull, dMin, dMax)))
             {
-                // if (!tMinClip)
-                //     printf("NO TMINCLIP\n");
-                // if (!tMaxClip)
-                //     printf("NO tMaxClip\n");
-                // printf("EARLY OUT\n");
                 return _calls;
             }
 
@@ -1673,21 +1669,14 @@ namespace crunch
 
             if (max(_uMax - _uMin, tMaxNew - tMinNew) < fatLineEpsilon)
             {
-                // printf("ISOLATED INTERSECTION\n");
                 // We have isolated the intersection with sufficient precision
                 ValueType t = (tMinNew + tMaxNew) / 2.0;
                 ValueType u = (_uMin + _uMax) / 2.0;
                 //_outResult.values[_outResult.count++] = _bFlip ? VectorType(u, t) : VectorType(t, u);
                 if (_bFlip)
-                {
-                    // printf("DA FLIPPED\n");
                     _outResult.append(u, t, _b.positionAt(u));
-                }
                 else
-                {
-                    // printf("DA NORMAL\n");
                     _outResult.append(t, u, _a.positionAt(t));
-                }
             }
             else
             {
