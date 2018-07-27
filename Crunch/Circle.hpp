@@ -148,7 +148,7 @@ namespace crunch
         lineTwoEnd = lineTwoStart + VectorType(-lineTwoEnd.y, lineTwoEnd.x);
         Line<VectorType> lineTwo = Line<VectorType>::fromPoints(lineTwoStart, lineTwoEnd);
 
-        IntersectionResult<VectorType> result = crunch::intersect(lineOne, lineTwo);
+        auto result = crunch::intersect(lineOne, lineTwo);
         Line<VectorType> line = Line<VectorType>::fromPoints(_a, _c);
 
         if (!result)
@@ -161,7 +161,7 @@ namespace crunch
                 return stick::Error(stick::ec::InvalidOperation, "No Intersection", STICK_FILE, STICK_LINE);
         }
 
-        return Circle(result.intersections()[0], distance(result.intersections()[0], _a));
+        return Circle(result.intersections()[0], distance(*result, _a));
     }
 
     template<class T>
