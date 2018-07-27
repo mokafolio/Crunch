@@ -161,7 +161,7 @@ namespace crunch
                 return stick::Error(stick::ec::InvalidOperation, "No Intersection", STICK_FILE, STICK_LINE);
         }
 
-        return Circle(result.intersections()[0], distance(*result, _a));
+        return Circle(*result, distance(*result, _a));
     }
 
     template<class T>
