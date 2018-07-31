@@ -1795,7 +1795,7 @@ namespace crunch
                      * and the curve.
                      */
 
-                    printf("ONE STRAIGHT\n");
+                    // printf("ONE STRAIGHT\n");
                     //make sure a is always the curven and b the straight one
                     const BezierCubic * a = this;
                     const BezierCubic * b = &_other;
@@ -1819,14 +1819,14 @@ namespace crunch
                     }
                     else
                     {
-                        printf("ALIGN WITH LINE CHECK\n");
+                        // printf("ALIGN WITH LINE CHECK\n");
                         // Calculate angle to the x-axis (1, 0).
                         auto dir = line.direction();
                         ValueType angle = std::atan2(-dir.y, dir.x);
                         ValueType s = std::sin(angle);
                         ValueType c = std::cos(angle);
 
-                        printf("LINE ANGLE %f %f %f\n", toDegrees(angle), s, c);
+                        // printf("LINE ANGLE %f %f %f\n", toDegrees(angle), s, c);
 
                         VectorType rotatedP1 = detail::alignWithLineHelper(a->m_pointOne, line.positionOne(), s, c);
                         VectorType rotatedH1 = detail::alignWithLineHelper(a->m_handleOne, line.positionOne(), s, c);
@@ -1834,14 +1834,14 @@ namespace crunch
                         VectorType rotatedP2 = detail::alignWithLineHelper(a->m_pointTwo, line.positionOne(), s, c);
                         BezierCubic bez(rotatedP1, rotatedH1, rotatedH2, rotatedP2);
 
-                        printf("%s %s %s %s\n", toString(rotatedP1).cString(), toString(rotatedH1).cString(), toString(rotatedH2).cString(), toString(rotatedP2).cString());
+                        // printf("%s %s %s %s\n", toString(rotatedP1).cString(), toString(rotatedH1).cString(), toString(rotatedH2).cString(), toString(rotatedP2).cString());
                         auto roots = bez.solveCubic(0, false, 0, 1);
 
                         for (stick::Int32 i = 0; i < roots.count; ++i)
                         {
                             auto pos = a->positionAt(roots.values[i]);
                             auto t2 = b->parameterOf(pos);
-                            printf("ROOT %f %f\n", roots.values[i], t2);
+                            // printf("ROOT %f %f\n", roots.values[i], t2);
                             if (t2 != -1)
                             {
                                 if (bFlip)

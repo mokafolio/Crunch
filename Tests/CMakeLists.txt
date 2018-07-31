@@ -1,3 +1,5 @@
 add_executable (CrunchTests CrunchTests.cpp)
+set_target_properties(CrunchTests PROPERTIES COMPILE_FLAGS "-fsanitize=address")
+set_target_properties(CrunchTests PROPERTIES LINK_FLAGS "-fsanitize=address")
 target_link_libraries(CrunchTests ${CRUNCHDEPS})
 add_custom_target(check COMMAND CrunchTests)
