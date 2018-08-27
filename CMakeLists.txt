@@ -7,11 +7,11 @@ option(AddTests "AddTests" ON)
 
 if(BuildSubmodules)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Submodules/Stick)
+    link_directories(Submodules/Stick)
 else()
     include_directories (${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include ${CMAKE_INSTALL_PREFIX}/include)
+    link_directories(/usr/local/lib)
 endif()
-
-link_directories(/usr/local/lib)
 
 set (CRUNCHDEPS Stick pthread)
 

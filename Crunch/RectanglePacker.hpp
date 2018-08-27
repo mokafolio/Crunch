@@ -301,7 +301,6 @@ namespace crunch
         auto mergedRect = freeRectangleHelper(_rect);
         while (mergedRect)
         {
-            printf("WAJKHAJGSHJKAS\n");
             mergedRect = freeRectangleHelper(*mergedRect);
         }
         return stick::Error();
