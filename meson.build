@@ -1,7 +1,9 @@
 project('Crunch', 'cpp', default_options : ['cpp_std=c++14'])
 
-# disable this bogus warning (should be deprecated in newer clang versions)
-add_global_arguments('-Wno-missing-braces', '-fno-exceptions', language: 'cpp')
+if meson.is_subproject() == false
+    # disable this bogus warning (should be deprecated in newer clang versions)
+    add_global_arguments('-Wno-missing-braces', '-fno-exceptions', language: 'cpp')
+endif
 
 crunchInc = [
     'Crunch/Bezier.hpp',
@@ -51,4 +53,8 @@ else
     crunchDeps = stickProj.get_variable('stickDep')
 endif
 
-subdir('Tests')
+# only build tests if not build as a subproject.
+# Otherwise it seems like the test meson function uses the wrong tests???
+if meson.is_subproject() == false
+    subdir('Tests')
+endif
