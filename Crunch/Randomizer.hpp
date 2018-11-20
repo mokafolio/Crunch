@@ -95,7 +95,6 @@ namespace crunch
     private:
 
         Engine m_engine;
-
         std::uniform_int_distribution<stick::UInt32> m_uintDistribution;
         std::uniform_int_distribution<stick::Int32> m_intDistribution;
         std::uniform_real_distribution<stick::Float32> m_floatDistribution;

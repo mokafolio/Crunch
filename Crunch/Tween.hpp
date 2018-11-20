@@ -135,8 +135,8 @@ namespace crunch
         Tween(const ValueType & _origin, const ValueType & _destination, stick::Float64 _duration) :
             m_start(_origin),
             m_end(_destination),
-            m_delta(m_end - m_start),
             m_current(_origin),
+            m_delta(m_end - m_start),
             m_duration(_duration),
             m_timeElapsed(0.0),
             m_bIsFinished(false)

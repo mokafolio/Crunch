@@ -317,29 +317,29 @@ namespace crunch
             stick::Float32 lerp1 = crunch::mix(grad0, grad1, fadedT);
             stick::Float32 tempLerp0 = crunch::mix(lerp0, lerp1, fadedZ);
 
-            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY1, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY1, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY1, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY1, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             stick::Float32 tempLerp1 = crunch::mix(lerp0, lerp1, fadedZ);
 
             stick::Float32 finLerp0 = crunch::mix(tempLerp0, tempLerp1, fadedY);
 
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX1, floatPartY0, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX1, floatPartY0, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX1, floatPartY0, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX1, floatPartY0, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             tempLerp0 = crunch::mix(lerp0, lerp1, fadedZ);
 
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX1, floatPartY1, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX1, floatPartY1, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX1, floatPartY1, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX1, floatPartY1, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             tempLerp1 = crunch::mix(lerp0, lerp1, fadedZ);
 
@@ -561,30 +561,30 @@ namespace crunch
             stick::Float32 lerp1 = crunch::mix(grad0, grad1, fadedT);
             stick::Float32 tempLerp0 = crunch::mix(lerp0, lerp1, fadedZ);
 
-            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY1, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY1, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY1, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX0 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY1, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             stick::Float32 tempLerp1 = crunch::mix(lerp0, lerp1, fadedZ);
 
             stick::Float32 finLerp0 = crunch::mix(tempLerp0, tempLerp1, fadedY);
 
 
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX1, floatPartY0, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX1, floatPartY0, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX1, floatPartY0, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY0 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX1, floatPartY0, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             tempLerp0 = crunch::mix(lerp0, lerp1, fadedZ);
 
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ0, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT0]]]], floatPartX1, floatPartY1, floatPartZ0, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ0 + m_rand[indexT1]]]], floatPartX1, floatPartY1, floatPartZ0, floatPartT1);
             lerp0 = crunch::mix(grad0, grad1, fadedT);
-            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT0);
-            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX0, floatPartY0, floatPartZ1, floatPartT1);
+            grad0 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT0]]]], floatPartX1, floatPartY1, floatPartZ1, floatPartT0);
+            grad1 = detail::grad(m_rand[indexX1 + m_rand[indexY1 + m_rand[indexZ1 + m_rand[indexT1]]]], floatPartX1, floatPartY1, floatPartZ1, floatPartT1);
             lerp1 = crunch::mix(grad0, grad1, fadedT);
             tempLerp1 = crunch::mix(lerp0, lerp1, fadedZ);
 

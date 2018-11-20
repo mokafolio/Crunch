@@ -438,9 +438,9 @@ namespace crunch
 
 
         VectorType m_pointOne;
-        VectorType m_pointTwo;
         VectorType m_handleOne;
         VectorType m_handleTwo;
+        VectorType m_pointTwo;
     };
 
     namespace detail
@@ -1898,7 +1898,7 @@ namespace crunch
             VectorType aNorm = _bezier.normalAt(0);
             VectorType bNorm = _bezier.normalAt(1.0);
             VectorType mid = _bezier.positionAt(0.5);
-            VectorType midNorm = _bezier.normalAt(0.5);
+            // VectorType midNorm = _bezier.normalAt(0.5);
 
             LineType aLine(_bezier.positionOne(), aNorm);
             LineType bLine(_bezier.positionTwo(), bNorm);
