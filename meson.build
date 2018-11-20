@@ -41,12 +41,14 @@ crunchInc = [
 
 incDirs = include_directories('.')
 
+install_headers(crunchInc, subdir: 'Crunch')
+
 if get_option('buildSubmodules') == false
     stickDep = meson.get_compiler('cpp').find_library('Stick')
     crunchDeps = [stickDep, dependency('threads')]
 else
-    subdir('Submodules/Stick')
-    crunchDeps = stickDep
+    stickProj = subproject('Stick')
+    crunchDeps = stickProj.get_variable('stickDep')
 endif
 
 subdir('Tests')
