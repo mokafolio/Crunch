@@ -53,6 +53,11 @@ else
     crunchDeps = stickProj.get_variable('stickDep')
 endif
 
+crunchDep = declare_dependency(,
+    include_directories: incDirs,
+    dependencies: crunchDeps,
+)
+
 # only build tests if not build as a subproject.
 # Otherwise it seems like the test meson function uses the wrong tests???
 if meson.is_subproject() == false
