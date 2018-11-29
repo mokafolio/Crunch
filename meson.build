@@ -53,7 +53,7 @@ else
     crunchDeps = stickProj.get_variable('stickDep')
 endif
 
-crunchDep = declare_dependency(,
+crunchDep = declare_dependency(
     include_directories: incDirs,
     dependencies: crunchDeps,
 )
