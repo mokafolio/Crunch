@@ -288,9 +288,9 @@ typedef Tween<stick::Float32, detail::backEaseInOut> TweenBackEaseInOutf;
 typedef Tween<stick::Float64, detail::backEaseIn> TweenBackEaseInd;
 typedef Tween<stick::Float64, detail::backEaseOut> TweenBackEaseOutd;
 typedef Tween<stick::Float64, detail::backEaseInOut> TweenBackEaseInOutd;
-typedef Tween<Vector2<stick::Float32>, detail::backEaseIn> TweenBackEaseInVec2f;
-typedef Tween<Vector2<stick::Float32>, detail::backEaseOut> TweenBackEaseOutVec2f;
-typedef Tween<Vector2<stick::Float32>, detail::backEaseInOut> TweenBackEaseInOutVec2f;
+typedef Tween<Vector2<stick::Float32>, detail::backEaseIn> TweenBackEaseIn2f;
+typedef Tween<Vector2<stick::Float32>, detail::backEaseOut> TweenBackEaseOut2f;
+typedef Tween<Vector2<stick::Float32>, detail::backEaseInOut> TweenBackEaseInOut2f;
 
 } // namespace crunch
 
