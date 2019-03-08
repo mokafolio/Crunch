@@ -140,11 +140,14 @@ inline T backEaseInOut(const T & _origin, const T & _delta, Float64 _duration, F
  * @arg ValueType The internal value type (i.e. Float32)
  * @arg Func The tweening function.
  */
-template <class ValueType,
-          ValueType (*Func)(const ValueType &, const ValueType &, stick::Float64, stick::Float64)>
+template <class VT,
+          VT (*Func)(const VT &, const VT &, stick::Float64, stick::Float64)>
 class Tween
 {
   public:
+
+    using ValueType = VT;
+
     /**
      * @brief Default Constructor.
      */
