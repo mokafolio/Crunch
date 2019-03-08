@@ -127,7 +127,7 @@ template <class T>
 inline T backEaseInOut(const T & _origin, const T & _delta, Float64 _duration, Float64 _elapsed)
 {
     static const Float64 s = 1.70158 * 1.525;
-    Float64 t = _elapsed / _duration / 2;
+    Float64 t = _elapsed / (_duration / 2);
     if (t < 1)
         return _delta / 2 * (t * t * ((s + 1) * t - s)) + _origin;
     t -= 2;
