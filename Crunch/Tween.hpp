@@ -108,6 +108,32 @@ inline T elasticEaseOut(const T & _origin, const T & _delta, Float64 _duration, 
 }
 
 template <class T>
+inline T elasticEaseInOut(const T & _origin, const T & _delta, Float64 _duration, Float64 _elapsed)
+{
+    if (_elapsed == 0)
+        return _origin;
+
+    Float64 t = _elapsed / (_duration / 2);
+    if (t == 2)
+        return _origin + _delta;
+
+    Float64 p = _duration * (0.3 * 1.5);
+    T a = _delta;
+    Float64 s = p / 4.0;
+
+    t -= 1;
+    if (t < 1)
+    {
+        // auto postFix = a * std::pow(2, 10 * t); // postIncrement is evil
+        return -0.5 * (a * std::pow(2, 10 * t) * std::sin((t * d - s) * (2 * PI) / p)) + b;
+    }
+    // auto postFix = a * std::pow(2, -10 * t); // postIncrement is evil
+    return a * std::pow(2, -10 * t) * std::sin((t * d - s) * Constants<Float64>::twoPi() / p) *
+               0.5 +
+           _delta + _origin;
+}
+
+template <class T>
 inline T backEaseIn(const T & _origin, const T & _delta, Float64 _duration, Float64 _elapsed)
 {
     static const Float64 s = 1.70158;
@@ -140,12 +166,10 @@ inline T backEaseInOut(const T & _origin, const T & _delta, Float64 _duration, F
  * @arg ValueType The internal value type (i.e. Float32)
  * @arg Func The tweening function.
  */
-template <class VT,
-          VT (*Func)(const VT &, const VT &, stick::Float64, stick::Float64)>
+template <class VT, VT (*Func)(const VT &, const VT &, stick::Float64, stick::Float64)>
 class Tween
 {
   public:
-
     using ValueType = VT;
 
     /**
@@ -270,10 +294,10 @@ typedef Tween<stick::Float32, detail::cubicEaseIn> TweenCubicEaseInf;
 typedef Tween<Vector2<stick::Float32>, detail::cubicEaseIn> TweenCubicEaseIn2f;
 typedef Tween<Vector3<stick::Float32>, detail::cubicEaseIn> TweenCubicEaseIn3f;
 
-typedef Tween<stick::Float32, detail::elasticEaseOut> TweenElasticEaseOutf;
-typedef Tween<Vector2<stick::Float32>, detail::elasticEaseOut> TweenElasticEaseOut2f;
-typedef Tween<stick::Float32, detail::elasticEaseIn> TweenElasticEaseInf;
-typedef Tween<Vector2<stick::Float32>, detail::elasticEaseIn> TweenElasticEaseIn2f;
+// typedef Tween<stick::Float32, detail::elasticEaseOut> TweenElasticEaseOutf;
+// typedef Tween<Vector2<stick::Float32>, detail::elasticEaseOut> TweenElasticEaseOut2f;
+// typedef Tween<stick::Float32, detail::elasticEaseIn> TweenElasticEaseInf;
+// typedef Tween<Vector2<stick::Float32>, detail::elasticEaseIn> TweenElasticEaseIn2f;
 
 typedef Tween<stick::Float64, detail::linearEaseOut> TweenLinearEaseOutd;
 typedef Tween<Vector2<stick::Float64>, detail::linearEaseOut> TweenLinearEaseOut2d;
@@ -291,6 +315,16 @@ typedef Tween<stick::Float64, detail::backEaseInOut> TweenBackEaseInOutd;
 typedef Tween<Vector2<stick::Float32>, detail::backEaseIn> TweenBackEaseIn2f;
 typedef Tween<Vector2<stick::Float32>, detail::backEaseOut> TweenBackEaseOut2f;
 typedef Tween<Vector2<stick::Float32>, detail::backEaseInOut> TweenBackEaseInOut2f;
+
+typedef Tween<stick::Float32, detail::elasticEaseIn> TweenElasticEaseInf;
+typedef Tween<stick::Float32, detail::elasticEaseOut> TweenElasticEaseOutf;
+typedef Tween<stick::Float32, detail::elasticEaseInOut> TweenElasticEaseInOutf;
+typedef Tween<stick::Float64, detail::elasticEaseIn> TweenElasticEaseInd;
+typedef Tween<stick::Float64, detail::elasticEaseOut> TweenElasticEaseOutd;
+typedef Tween<stick::Float64, detail::elasticEaseInOut> TweenElasticEaseInOutd;
+typedef Tween<Vector2<stick::Float32>, detail::elasticEaseIn> TweenElasticEaseIn2f;
+typedef Tween<Vector2<stick::Float32>, detail::elasticEaseOut> TweenElasticEaseOut2f;
+typedef Tween<Vector2<stick::Float32>, detail::elasticEaseInOut> TweenElasticEaseInOut2f;
 
 } // namespace crunch
 
