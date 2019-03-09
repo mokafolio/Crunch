@@ -121,8 +121,8 @@ inline T elasticEaseInOut(const T & _origin, const T & _delta, Float64 _duration
     // T a = _delta;
     Float64 s = p / 4.0;
 
-    t -= 1;
-    if (t < 1)
+     t -= 1;
+    if (t < 0)
     {
         auto postFix = _delta * std::pow(2, 10 * t); // postIncrement is evil
         return (postFix * std::sin((t * _duration - s) * Constants<Float64>::twoPi() / p)) * -0.5 +
