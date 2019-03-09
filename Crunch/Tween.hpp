@@ -82,11 +82,11 @@ inline T elasticEaseIn(const T & _origin, const T & _delta, Float64 _duration, F
         return _origin + _delta;
 
     Float64 p = _duration * 0.3;
-    T a = _delta;
     Float64 s = p / 4.0;
-    T postFix = a * std::pow(2, 10 * (_elapsed -= 1));
+    _elapsed -= 1
+    T postFix = _delta * std::pow(2, 10 * _elapsed);
     return -(postFix * std::sin((_elapsed * _duration - s) * Constants<Float64>::twoPi() / p)) +
-           _delta;
+           _origin;
 }
 
 template <class T>
