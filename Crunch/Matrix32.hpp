@@ -18,6 +18,9 @@ namespace crunch
     template<class T>
     class Matrix32
     {
+        template<class TF>
+        friend class Matrix4;
+        
     public:
 
         /**
