@@ -668,8 +668,8 @@ namespace crunch
         T tx = -(_right + _left) / (_right - _left);
         T ty = -(_top + _bottom) / (_top - _bottom);
 
-        return Matrix32<T>(a, 0.0, 0.0, tx,
-                         0.0, b, 0.0, ty);
+        return Matrix32<T>(a, 0.0, tx,
+                         0.0, b, ty);
     }
 }
 
