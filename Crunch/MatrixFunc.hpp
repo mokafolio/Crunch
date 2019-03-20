@@ -330,10 +330,10 @@ inline void decompose(const Matrix32<T> & _mat,
 template <class T>
 inline Matrix4<T> to3DTransform(const Matrix32<T> & _mat)
 {
-    return Matrix4<T>(Vector4<T>(_mat.m_col0.x, _mat.m_col0.y, 0, 0),
-                      Vector4<T>(_mat.m_col1.x, _mat.m_col1.y, 0, 0),
+    return Matrix4<T>(Vector4<T>(_mat[0].x, _mat[0].y, 0, 0),
+                      Vector4<T>(_mat[1].x, _mat[1].y, 0, 0),
                       Vector4<T>(0, 0, 1, 0),
-                      Vector4<T>(_mat.m_col2.x, _mat.m_col2.y, 0, 1));
+                      Vector4<T>(_mat[2].x, _mat[2].y, 0, 1));
 }
 
 template <class T>
