@@ -59,6 +59,7 @@ namespace crunch
         template<class OT>
         inline Matrix4(const Matrix3<OT> & _mat);
 
+
         /**
          * @brief Copy constructs a matrix from another one.
          */
