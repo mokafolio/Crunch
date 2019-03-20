@@ -268,6 +268,15 @@ namespace crunch
          */
         static inline Matrix32 skewMatrix(const Vector2<T> & _rads);
 
+        /**
+         * @brief Returns an orthographic 2D projection matrix.
+         * @param _left The value for the left clipping plane.
+         * @param _right The value for the right clipping plane.
+         * @param _bottom The value for the bottom clipping plane.
+         * @param _top The value for the top clipping plane.
+         */
+        inline static Matrix32 ortho(T _left, T _right, T _bottom, T _top);
+
 
     private:
 
@@ -647,6 +656,20 @@ namespace crunch
         return Matrix32(Vector2<T>(1, std::tan(_rads.y)),
                         Vector2<T>(std::tan(_rads.x), 1),
                         Vector2<T>(0));
+    }
+
+    template<class T>
+    inline Matrix32<T> Matrix32<T>::ortho(T _left, T _right, T _bottom, T _top)
+    {
+        Matrix32<T> ret;
+
+        T a = (T)2.0 / (_right - _left);
+        T b = (T)2.0 / (_top - _bottom);
+        T tx = -(_right + _left) / (_right - _left);
+        T ty = -(_top + _bottom) / (_top - _bottom);
+
+        return Matrix32<T>(a, 0.0, 0.0, tx,
+                         0.0, b, 0.0, ty);
     }
 }
 

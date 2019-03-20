@@ -252,6 +252,7 @@ namespace crunch
     template<class T>
     inline void decompose(const Matrix3<T> & _mat, Vector2<T> & _outTranslation, T & _outRotation, Vector2<T> & _outScale)
     {
+        //@TODO: this should be a more involved implementation (see the Mat32 implementation below)
         _outTranslation = _mat[2];
 
         T a = _mat.element(0, 0);
@@ -272,6 +273,7 @@ namespace crunch
     * @param _mat The matrix to decompose.
     * @param _outTranslation Will hold the translation of the input matrix.
     * @param _outRotation Will hold the rotation of the input matrix.
+    * @param _outSkew Will hold the skew of the input matrix.
     * @param _outScale Will hold the scale of the input matrix.
     */
     template<class T>
