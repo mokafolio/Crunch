@@ -43,7 +43,7 @@ crunchInc = [
 
 incDirs = include_directories('.')
 
-if meson.is_subproject() == false
+if meson.is_subproject() == false or get_option('forceInstallHeaders')
     install_headers(crunchInc, subdir: 'Crunch')
 endif
 

@@ -325,7 +325,7 @@ inline void decompose(const Matrix32<T> & _mat,
  * This is useful if you have your transformations for 2D code stored in 3x3/3x2 matrices,
  * but need 4x4 matrices for rendering (i.e. when using openGL).
  *
- * NOTE: I think the should move to Matrix4 class as one of the static helper functions.
+ * NOTE: I think these should move to Matrix4 class as one of the static helper functions.
  */
 template <class T>
 inline Matrix4<T> to3DTransform(const Matrix32<T> & _mat)

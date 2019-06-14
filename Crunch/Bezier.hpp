@@ -665,6 +665,7 @@ namespace crunch
         }
     }
 
+    //@TODO: I think we can simplify this implementation by a lot using the existing extrema functions?
     template<class T>
     typename BezierCubic<T>::RectangleType BezierCubic<T>::bounds(ValueType _padding) const
     {
